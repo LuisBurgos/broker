@@ -13,7 +13,7 @@ import java.net.UnknownHostException;
 public class Client {
 
     private static int portNumber = 8888;
-    private static String hostName = "BrokerServer.broker.com";
+    private static String hostName = "Broker.broker.com";
 
     public static void main(String[] args) throws IOException {
 

@@ -9,20 +9,20 @@ import java.net.Socket;
 /**
  * Created by luisburgos on 21/09/15.
  */
-public class ServerThread  extends Thread{
+public class ServerThread extends Thread{
 
     private Socket socket = null;
 
     public ServerThread(Socket socket) {
         super("ServerThread");
         this.socket = socket;
+        System.out.println("new thread on Server");
     }
 
     public void run() {
-
         try (
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(
+                PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader socketIn = new BufferedReader(
                         new InputStreamReader(
                                 socket.getInputStream()));
         ) {
@@ -30,11 +30,12 @@ public class ServerThread  extends Thread{
             String inputLine, outputLine;
             Protocol kkp = new Protocol();
             outputLine = kkp.processInput(null);
-            out.println(outputLine);
+            socketOut.println(outputLine);
 
-            while ((inputLine = in.readLine()) != null) {
+            while ((inputLine = socketIn.readLine()) != null) {
                 outputLine = kkp.processInput(inputLine);
-                out.println(outputLine);
+                System.out.println(outputLine);
+                socketOut.println(outputLine);
                 if (outputLine.equals("Bye"))
                     break;
             }

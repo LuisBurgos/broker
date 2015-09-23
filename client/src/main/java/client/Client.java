@@ -12,8 +12,9 @@ import java.net.UnknownHostException;
  */
 public class Client {
 
-    private static int portNumber = 8888;
-    private static String hostName = "Broker.broker.com";
+    private static int portNumber = 5555;
+    //private static String hostName = "127.0.0.1";
+    private static String hostName = "localhost";
 
     public static void main(String[] args) throws IOException {
 
@@ -45,6 +46,7 @@ public class Client {
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to " +
                     hostName);
+            e.printStackTrace();
             System.exit(1);
         }
     }

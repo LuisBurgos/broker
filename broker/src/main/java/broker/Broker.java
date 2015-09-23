@@ -9,17 +9,22 @@ import java.net.Socket;
  */
 public class Broker {
 
+    private static int portNumber = 5555;
 
- public static void main(String[] args) throws IOException {
-         int portNumber = 8888;
-         
-       
-         ServerSocket serverSocket = new ServerSocket(portNumber);
-       
-         while(true){
-           Socket clientSocket = serverSocket.accept();
-           new BrokerThread(clientSocket).start();
+    public static void main(String[] args) throws IOException {
+
+        boolean listening = true;
+
+        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+            while (listening) {
+                new BrokerThread(serverSocket.accept()).start();
+
+            }
+        } catch (IOException e) {
+            System.err.println("Could not listen on port " + portNumber);
+            System.exit(-1);
         }
+
     }
 
 }

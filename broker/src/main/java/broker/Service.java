@@ -12,7 +12,7 @@ package broker;
 public class Service {
     
     private String ip;
-    private int port;
+    private long port;
     private String service;
     
     public Service(String ip, int port, String services){
@@ -29,11 +29,11 @@ public class Service {
         this.ip = ip;
     }
 
-    public String getPort() {
+    public long getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(long port) {
         this.port = port;
     }
 

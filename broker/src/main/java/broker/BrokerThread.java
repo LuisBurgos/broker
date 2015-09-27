@@ -68,7 +68,12 @@ public class BrokerThread implements Runnable {
                 
                 outputLine = protocol.processInput(inputLine);
                 System.out.println(outputLine);
-                
+
+                //clientOut.println(outputLine);
+                if(outputLine.equals("Bye.")){
+                    break;
+                }
+
                 if(services.containsKey(outputLine)){
                     clientOut.println("si");
                 }
@@ -76,10 +81,7 @@ public class BrokerThread implements Runnable {
                     clientOut.println("no");
                 }
                 
-                //clientOut.println(outputLine);
-                if(outputLine.equals("Bye.")){
-                    break;
-                }
+
             }
             socket.close();
 

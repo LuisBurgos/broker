@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,17 +20,34 @@ public class BrokerThread implements Runnable {
     private static int serverPortNumber = 2222;
     private static String serverHostName = "localhost";
     private static int contadorDeThreads = 1;
-
+    
+    private HashMap<String,Service> services;
+    
     public BrokerThread(Socket socket){
         this.socket = socket;
         System.out.println("thread #"+ contadorDeThreads + " on Broker");
         contadorDeThreads++;
+        services = new HashMap();
+        
+        //Solo para la entrega 2 
+           
+        this.addService("Consulta", new Service(serverHostName,serverPortNumber, "Consulta"));
+        this.addService("Alta", new Service(serverHostName,serverPortNumber, "Alta"));
+        this.addService("Baja", new Service(serverHostName,serverPortNumber, "Baja"));
+        this.addService("Cambio", new Service(serverHostName,serverPortNumber, "Cambio"));
+        
+        //####3
+        
     }
 
     public void connect(ServerSocket client){
         //Genera un socket
     }
-
+    
+    public void addService(String name, Service service){
+        services.put(name, service);
+    }
+    
     public void run(){
         try (
 
@@ -47,10 +65,18 @@ public class BrokerThread implements Runnable {
             clientOut.println(outputLine);
 
             while((inputLine = clientIn.readLine()) != null ){
-
+                
                 outputLine = protocol.processInput(inputLine);
                 System.out.println(outputLine);
-                clientOut.println(outputLine);
+                
+                if(services.containsKey(outputLine)){
+                    clientOut.println("si");
+                }
+                else{
+                    clientOut.println("no");
+                }
+                
+                //clientOut.println(outputLine);
                 if(outputLine.equals("Bye.")){
                     break;
                 }

@@ -17,8 +17,7 @@ public class Broker {
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (listening) {
-                new BrokerThread(serverSocket.accept()).start();
-
+                new Thread(new BrokerThread(serverSocket.accept())).start();;
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);

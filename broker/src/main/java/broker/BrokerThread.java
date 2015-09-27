@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
@@ -12,17 +13,21 @@ import java.util.logging.Logger;
 /**
  * Created by luisburgos on 21/09/15.
  */
-public class BrokerThread extends Thread{
+public class BrokerThread implements Runnable {
 
     private Socket socket = null;
     private static int serverPortNumber = 2222;
     private static String serverHostName = "localhost";
-
+    private static int contadorDeThreads = 1;
 
     public BrokerThread(Socket socket){
-        super("BrokerThread");
         this.socket = socket;
-        System.out.println("new thread on Broker");
+        System.out.println("thread #"+ contadorDeThreads + " on Broker");
+        contadorDeThreads++;
+    }
+
+    public void connect(ServerSocket client){
+        //Genera un socket
     }
 
     public void run(){
@@ -32,48 +37,38 @@ public class BrokerThread extends Thread{
                 BufferedReader serverIn = new BufferedReader(
                         new InputStreamReader(serverSocket.getInputStream()));
 
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(
+                PrintWriter clientOut = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader clientIn = new BufferedReader(
                         new InputStreamReader(
                                 socket.getInputStream()));
         ) {
-            BufferedReader stdIn =
-                    new BufferedReader(new InputStreamReader(System.in));
+            //BufferedReader stdIn =
+              //      new BufferedReader(new InputStreamReader(System.in));
             String fromServer;
             String fromClient;
 
-            String inputLine, outputLine;
-            Protocol kkp = new Protocol();
-            outputLine = kkp.processInput(null);
-            out.println(outputLine);
+            while((fromServer = serverIn.readLine()) != null || (fromClient = clientIn.readLine()) != null ){
 
-            while((fromServer = serverIn.readLine()) != null || (fromClient = in.readLine()) != null ){
-
+                fromServer = serverIn.readLine();
                 if(fromServer != null){
-                    outputLine = kkp.processInput(fromServer);
-                    System.out.println("fromServer: " + outputLine);
-                    out.println(outputLine);
-                    if (outputLine.equals("Bye"))
-                        break;
+                    //outputLine = kkp.processInput(fromServer);
+                    //System.out.println("fromServer: " + outputLine);
+                    System.out.println(fromServer);
+                    clientOut.println(fromServer);
+
+                    //if (outputLine.equals("Bye"))
+                    //    break;
                 }
 
-                fromClient = stdIn.readLine();
+                fromClient = clientIn.readLine();
                 if(fromClient != null){
-                    outputLine = kkp.processInput(fromClient);
-                    System.out.println("fromClient: " + outputLine);
-                    serverOut.println(outputLine);
+                    //outputLine = kkp.processInput(fromClient);
+                    //System.out.println("fromClient: " + outputLine);
+                    System.out.println(fromClient);
+                    serverOut.println(fromClient);
                 }
 
             }
-
-
-            /*while ((inputLine = in.readLine()) != null) {
-                outputLine = kkp.processInput(inputLine);
-                out.println(outputLine);
-                if (outputLine.equals("Bye"))
-                    break;
-            }*/
-
             socket.close();
 
         }catch (IOException e) {

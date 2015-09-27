@@ -9,14 +9,15 @@ import java.net.Socket;
 /**
  * Created by luisburgos on 21/09/15.
  */
-public class ServerThread extends Thread{
+public class ServerThread implements Runnable {
 
     private Socket socket = null;
+    private static int contadorDeThreads = 1;
 
     public ServerThread(Socket socket) {
-        super("ServerThread");
         this.socket = socket;
-        System.out.println("new thread on Server");
+        System.out.println("thread #"+ contadorDeThreads + " on Server");
+        contadorDeThreads++;
     }
 
     public void run() {
@@ -28,16 +29,16 @@ public class ServerThread extends Thread{
         ) {
 
             String inputLine, outputLine;
-            Protocol kkp = new Protocol();
-            outputLine = kkp.processInput(null);
-            socketOut.println(outputLine);
+            //Protocol kkp = new Protocol();
+            //outputLine = kkp.processInput(null);
+            //socketOut.println(outputLine);
 
             while ((inputLine = socketIn.readLine()) != null) {
-                outputLine = kkp.processInput(inputLine);
-                System.out.println(outputLine);
-                socketOut.println(outputLine);
-                if (outputLine.equals("Bye"))
-                    break;
+                //outputLine = kkp.processInput(inputLine);
+                System.out.println(inputLine);
+                socketOut.println(inputLine);
+                //if (outputLine.equals("Bye"))
+                  //  break;
             }
 
             socket.close();

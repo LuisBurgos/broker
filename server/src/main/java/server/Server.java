@@ -16,7 +16,7 @@ public class Server {
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (listening) {
-                new ServerThread(serverSocket.accept()).start();
+                new Thread(new ServerThread(serverSocket.accept())).start();;
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);

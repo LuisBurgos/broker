@@ -29,12 +29,16 @@ public class Client {
             String fromServer;
             String fromUser;
 
+            fromUser = stdIn.readLine();
+            System.out.println(fromUser);
+
             while ((fromServer = in.readLine()) != null) {
                 System.out.println("Server: " + fromServer);
                 if (fromServer.equals("Bye."))
                     break;
 
                 fromUser = stdIn.readLine();
+                System.out.println(fromUser);
                 if (fromUser != null) {
                     System.out.println("Client: " + fromUser);
                     out.println(fromUser);

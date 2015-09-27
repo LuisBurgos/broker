@@ -32,42 +32,28 @@ public class BrokerThread implements Runnable {
 
     public void run(){
         try (
-                Socket serverSocket = new Socket(serverHostName, serverPortNumber);
-                PrintWriter serverOut = new PrintWriter(serverSocket.getOutputStream(), true);
-                BufferedReader serverIn = new BufferedReader(
-                        new InputStreamReader(serverSocket.getInputStream()));
 
-                PrintWriter clientOut = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader clientIn = new BufferedReader(
-                        new InputStreamReader(
-                                socket.getInputStream()));
+                PrintWriter clientOut =
+                        new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader clientIn =
+                        new BufferedReader(
+                                new InputStreamReader(socket.getInputStream())
+                        );
         ) {
-            //BufferedReader stdIn =
-              //      new BufferedReader(new InputStreamReader(System.in));
-            String fromServer;
-            String fromClient;
 
-            while((fromServer = serverIn.readLine()) != null || (fromClient = clientIn.readLine()) != null ){
+            String inputLine, outputLine;
+            Protocol protocol = new Protocol();
+            outputLine = protocol.processInput(null);
+            clientOut.println(outputLine);
 
-                fromServer = serverIn.readLine();
-                if(fromServer != null){
-                    //outputLine = kkp.processInput(fromServer);
-                    //System.out.println("fromServer: " + outputLine);
-                    System.out.println(fromServer);
-                    clientOut.println(fromServer);
+            while((inputLine = clientIn.readLine()) != null ){
 
-                    //if (outputLine.equals("Bye"))
-                    //    break;
+                outputLine = protocol.processInput(inputLine);
+                System.out.println(outputLine);
+                clientOut.println(outputLine);
+                if(outputLine.equals("Bye.")){
+                    break;
                 }
-
-                fromClient = clientIn.readLine();
-                if(fromClient != null){
-                    //outputLine = kkp.processInput(fromClient);
-                    //System.out.println("fromClient: " + outputLine);
-                    System.out.println(fromClient);
-                    serverOut.println(fromClient);
-                }
-
             }
             socket.close();
 

@@ -47,7 +47,7 @@ public class ProxyClient {
                 System.out.println("Desconectado...");
                 break;
             } else if(brokerResponse.equals("NO")){
-                throw new ServiceNotFoundException("Service doest not exists on Broker!");
+                throw new ServiceNotFoundException();
             } else if(brokerResponse.equals("YES")){
                 System.out.println("Service exists!");
             }

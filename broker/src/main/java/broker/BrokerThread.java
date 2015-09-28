@@ -32,17 +32,8 @@ public class BrokerThread implements Runnable {
 
     }
 
-    public void connect(ServerSocket client){
-        //Genera un socket
-    }
-    
-    public void addService(String name, Service service){
-        services.put(name, service);
-    }
-    
-    public void run(){
+    private void connect(){
         try (
-
                 PrintWriter clientOut =
                         new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader clientIn =
@@ -59,7 +50,7 @@ public class BrokerThread implements Runnable {
             final int currentThread = totalThreads;
 
             while((inputLine = clientIn.readLine()) != null ){
-                
+
                 outputLine = protocol.processInput(inputLine);
                 System.out.println("Current thread #" + currentThread +" requests: " + outputLine);
 
@@ -81,6 +72,14 @@ public class BrokerThread implements Runnable {
         }catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public void addService(String name, Service service){
+        services.put(name, service);
+    }
+    
+    public void run(){
+        connect();
     }
 
 }

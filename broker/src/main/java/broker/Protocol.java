@@ -16,10 +16,10 @@ public class Protocol {
             theOutput = "Connected to Broker";
             state = ATENDING;
         } else if(state == ATENDING){
-            if (!theInput.equals("Bye.")) {
+            if (!theInput.equals("Close.")) {
                 theOutput = theInput;
             } else {
-                theOutput = "Bye.";
+                theOutput = "Close.";
                 state = WAITING;
             }
         }

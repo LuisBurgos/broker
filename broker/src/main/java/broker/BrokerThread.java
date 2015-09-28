@@ -13,23 +13,18 @@ import java.util.HashMap;
  */
 public class BrokerThread implements Runnable {
 
-    private Socket socket = null;
-    private static int serverPortNumber = 2222;
-    private static String serverHostName = "localhost";
+    private Broker broker;
+    private Socket socket;
     private static int totalThreads = 0;
-    
-    private HashMap<String,Service> services;
-    
-    public BrokerThread(Socket socket){
+
+    public BrokerThread(Broker broker, Socket socket){
+        this.broker = broker;
         this.socket = socket;
         System.out.println("thread #"+ ++totalThreads + " on Broker");
-        services = new HashMap();
+    }
 
-        this.addService("Consulta", new Service(serverHostName,serverPortNumber, "Consulta"));
-        this.addService("Alta", new Service(serverHostName,serverPortNumber, "Alta"));
-        this.addService("Baja", new Service(serverHostName,serverPortNumber, "Baja"));
-        this.addService("Cambio", new Service(serverHostName,serverPortNumber, "Cambio"));
-
+    public void run(){
+        connect();
     }
 
     private void connect(){
@@ -54,16 +49,16 @@ public class BrokerThread implements Runnable {
                 outputLine = protocol.processInput(inputLine);
                 System.out.println("Current thread #" + currentThread +" requests: " + outputLine);
 
-                //clientOut.println(outputLine);
-                if(outputLine.equals("Bye.")){
+                if(outputLine.equals("Close.")){
                     break;
                 }
 
-                if(services.containsKey(outputLine)){
-                    clientOut.println("YES");
-                }
-                else{
-                    clientOut.println("NO");
+                try {
+                    if(broker.findService(outputLine) != null){
+                        clientOut.println("Service FOUND");
+                    }
+                } catch (ServiceNotFoundException e) {
+                    clientOut.println("Service not found");
                 }
 
             }
@@ -72,14 +67,6 @@ public class BrokerThread implements Runnable {
         }catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    
-    public void addService(String name, Service service){
-        services.put(name, service);
-    }
-    
-    public void run(){
-        connect();
     }
 
 }

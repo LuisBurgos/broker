@@ -15,35 +15,56 @@ public class ProxyClient {
     private static int portNumber = 5555;
     private static String hostName = "localhost";
 
-    public static void main(String[] args) throws IOException {
+    Socket clientSocket;
+    PrintWriter clientOutput;
+    BufferedReader clientInput;
 
-        try (
-                Socket clientSocket = new Socket(hostName, portNumber);
-                PrintWriter clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader clientInput = new BufferedReader(
-                        new InputStreamReader(clientSocket.getInputStream())
-                );
-        ) {
-            BufferedReader userInput = new BufferedReader(
-                    new InputStreamReader(System.in)
-            );
+    private void connectToBroker() throws IOException {
+        clientSocket = new Socket(hostName, portNumber);
+    }
 
-            String brokerResponse, fromUser;
+    private void initializeBuffers() throws IOException {
+        clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
+        clientInput = new BufferedReader(
+                new InputStreamReader(clientSocket.getInputStream())
+        );
+    }
 
-            while ((brokerResponse = clientInput.readLine()) != null) {
-                System.out.println("Broker: " + brokerResponse);
-                if (brokerResponse.equals("Bye.")){
-                    System.out.println("Desconectado...");
-                    break;
-                }
+    private void startConnection() throws IOException, ServiceNotFoundException {
 
-                fromUser = userInput.readLine();
-                if (fromUser != null) {
-                    System.out.println("ProxyClient: " + fromUser);
-                    clientOutput.println(fromUser);
-                }
+        connectToBroker();
+        initializeBuffers();
+
+        BufferedReader userInput = new BufferedReader(
+                new InputStreamReader(System.in)
+        );
+
+        String brokerResponse, fromUser;
+
+        while ((brokerResponse = clientInput.readLine()) != null) {
+            System.out.println("Broker: " + brokerResponse);
+            if (brokerResponse.equals("Bye.")){
+                System.out.println("Desconectado...");
+                break;
+            } else if(brokerResponse.equals("NO")){
+                throw new ServiceNotFoundException("Service doest not exists on Broker!");
+            } else if(brokerResponse.equals("YES")){
+                System.out.println("Service exists!");
             }
 
+            fromUser = userInput.readLine();
+            if (fromUser != null) {
+                System.out.println("ProxyClient: " + fromUser);
+                clientOutput.println(fromUser);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        ProxyClient proxyClient = new ProxyClient();
+        try {
+            proxyClient.startConnection();
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
@@ -51,8 +72,10 @@ public class ProxyClient {
             System.err.println("Couldn't get I/O for the connection to " + hostName);
             e.printStackTrace();
             System.exit(1);
+        } catch (ServiceNotFoundException e) {
+            System.err.println("Couldn't get Service requested from Broker");
+            e.printStackTrace();
         }
     }
-
 
 }

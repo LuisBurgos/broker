@@ -6,10 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by luisburgos on 21/09/15.
@@ -19,25 +16,20 @@ public class BrokerThread implements Runnable {
     private Socket socket = null;
     private static int serverPortNumber = 2222;
     private static String serverHostName = "localhost";
-    private static int contadorDeThreads = 1;
+    private static int totalThreads = 0;
     
     private HashMap<String,Service> services;
     
     public BrokerThread(Socket socket){
         this.socket = socket;
-        System.out.println("thread #"+ contadorDeThreads + " on Broker");
-        contadorDeThreads++;
+        System.out.println("thread #"+ ++totalThreads + " on Broker");
         services = new HashMap();
-        
-        //Solo para la entrega 2 
-           
+
         this.addService("Consulta", new Service(serverHostName,serverPortNumber, "Consulta"));
         this.addService("Alta", new Service(serverHostName,serverPortNumber, "Alta"));
         this.addService("Baja", new Service(serverHostName,serverPortNumber, "Baja"));
         this.addService("Cambio", new Service(serverHostName,serverPortNumber, "Cambio"));
-        
-        //####3
-        
+
     }
 
     public void connect(ServerSocket client){
@@ -64,10 +56,12 @@ public class BrokerThread implements Runnable {
             outputLine = protocol.processInput(null);
             clientOut.println(outputLine);
 
+            final int currentThread = totalThreads;
+
             while((inputLine = clientIn.readLine()) != null ){
                 
                 outputLine = protocol.processInput(inputLine);
-                System.out.println(outputLine);
+                System.out.println("Current thread #" + currentThread +" requests: " + outputLine);
 
                 //clientOut.println(outputLine);
                 if(outputLine.equals("Bye.")){
@@ -75,12 +69,11 @@ public class BrokerThread implements Runnable {
                 }
 
                 if(services.containsKey(outputLine)){
-                    clientOut.println("si");
+                    clientOut.println("YES");
                 }
                 else{
-                    clientOut.println("no");
+                    clientOut.println("NO");
                 }
-                
 
             }
             socket.close();

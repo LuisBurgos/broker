@@ -6,66 +6,59 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
 
 /**
  * Created by luisburgos on 21/09/15.
  */
 public class BrokerThread implements Runnable {
 
-    private Socket socket = null;
-    private static int serverPortNumber = 2222;
-    private static String serverHostName = "localhost";
-    private static int contadorDeThreads = 1;
+    private Broker broker;
+    private Socket socket;
+    private static int totalThreads = 0;
 
-    public BrokerThread(Socket socket){
+    public BrokerThread(Broker broker, Socket socket){
+        this.broker = broker;
         this.socket = socket;
-        System.out.println("thread #"+ contadorDeThreads + " on Broker");
-        contadorDeThreads++;
-    }
-
-    public void connect(ServerSocket client){
-        //Genera un socket
+        System.out.println("thread #"+ ++totalThreads + " on Broker");
     }
 
     public void run(){
+        connect();
+    }
+
+    private void connect(){
         try (
-                Socket serverSocket = new Socket(serverHostName, serverPortNumber);
-                PrintWriter serverOut = new PrintWriter(serverSocket.getOutputStream(), true);
-                BufferedReader serverIn = new BufferedReader(
-                        new InputStreamReader(serverSocket.getInputStream()));
-
-                PrintWriter clientOut = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader clientIn = new BufferedReader(
-                        new InputStreamReader(
-                                socket.getInputStream()));
+                PrintWriter clientOut =
+                        new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader clientIn =
+                        new BufferedReader(
+                                new InputStreamReader(socket.getInputStream())
+                        );
         ) {
-            //BufferedReader stdIn =
-              //      new BufferedReader(new InputStreamReader(System.in));
-            String fromServer;
-            String fromClient;
 
-            while((fromServer = serverIn.readLine()) != null || (fromClient = clientIn.readLine()) != null ){
+            String inputLine, outputLine;
+            Protocol protocol = new Protocol();
+            outputLine = protocol.processInput(null);
+            clientOut.println(outputLine);
 
-                fromServer = serverIn.readLine();
-                if(fromServer != null){
-                    //outputLine = kkp.processInput(fromServer);
-                    //System.out.println("fromServer: " + outputLine);
-                    System.out.println(fromServer);
-                    clientOut.println(fromServer);
+            final int currentThread = totalThreads;
 
-                    //if (outputLine.equals("Bye"))
-                    //    break;
+            while((inputLine = clientIn.readLine()) != null ){
+
+                outputLine = protocol.processInput(inputLine);
+                System.out.println("Current thread #" + currentThread +" requests: " + outputLine);
+
+                if(outputLine.equals("Close.")){
+                    break;
                 }
 
-                fromClient = clientIn.readLine();
-                if(fromClient != null){
-                    //outputLine = kkp.processInput(fromClient);
-                    //System.out.println("fromClient: " + outputLine);
-                    System.out.println(fromClient);
-                    serverOut.println(fromClient);
+                try {
+                    if(broker.findService(outputLine) != null){
+                        clientOut.println("Service FOUND");
+                    }
+                } catch (ServiceNotFoundException e) {
+                    clientOut.println("Service not found");
                 }
 
             }

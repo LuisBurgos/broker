@@ -8,20 +8,55 @@ import java.net.ServerSocket;
  */
 public class Server {
 
-    private static int portNumber = 2222;
+    private static final int PORT_NUMBER_SERVER = 2222;
 
-    public static void main(String[] args) throws IOException {
+    private ProxyServer proxyServer = new ProxyServer();
+    private ServerSocket socketServer;
 
+    public void start(){
+
+    }
+
+    public void initializeSocket() throws IOException {
+        socketServer = new ServerSocket(PORT_NUMBER_SERVER);
+    }
+
+    public void startAcceptingPetitions(){
         boolean listening = true;
 
-        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+        try {
             while (listening) {
-                new Thread(new ServerThread(serverSocket.accept())).start();;
+                new Thread(new ServerThread(socketServer.accept())).start();;
             }
         } catch (IOException e) {
-            System.err.println("Could not listen on port " + portNumber);
+            System.err.println("Could not listen on port " + PORT_NUMBER_SERVER);
             System.exit(-1);
         }
     }
+
+    public void runService(){
+
+    }
+
+    /**
+     * Use BROKER API
+     */
+    public void registerServiceIntoBroker(){
+        proxyServer.build();
+        proxyServer.callService();
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        try {
+            server.initializeSocket();
+            server.registerServiceIntoBroker();
+            server.startAcceptingPetitions();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 }

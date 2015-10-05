@@ -1,26 +1,39 @@
 package client;
 
+import com.google.gson.JsonObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * Created by luisburgos on 21/09/15.
  */
 public class ProxyClient {
 
-    private static int portNumber = 5555;
-    private static String hostName = "localhost";
+    private static final int BROKER_PORT_NUMBER = 5555;
+    private static final String BASE_HOSTNAME = "localhost";
+    private String entity;
 
     Socket clientSocket;
     PrintWriter clientOutput;
     BufferedReader clientInput;
 
+    public void build(){
+        try {
+            connectToBroker();
+            initializeBuffers();
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to " + BASE_HOSTNAME);
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
     private void connectToBroker() throws IOException {
-        clientSocket = new Socket(hostName, portNumber);
+        clientSocket = new Socket(BASE_HOSTNAME, BROKER_PORT_NUMBER);
     }
 
     private void initializeBuffers() throws IOException {
@@ -47,27 +60,60 @@ public class ProxyClient {
 
             fromUser = userInput.readLine();
             if (fromUser != null) {
+                if(fromUser.equals("send")){
+                    clientOutput.println(entity);
+                    System.out.println("SEND: " + entity);
+                }
                 System.out.println("ProxyClient: " + fromUser);
                 clientOutput.println(fromUser);
             }
         }
     }
 
-    public static void main(String[] args) {
-
-        ProxyClient proxyClient = new ProxyClient();
+    private void packData(String serviceName, String candidateId){
+        JsonObject json = new JsonObject();
+        json.addProperty("type", 1);
+        json.addProperty("serviceName", serviceName);
+        json.addProperty("candidateId", candidateId);
+        entity = json.toString();
         try {
-            proxyClient.connectToBroker();
-            proxyClient.initializeBuffers();
-            proxyClient.startProcessing();
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
+            forwardRequest(entity);
         } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " + hostName);
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
+    private void forwardRequest(String request) throws IOException {
+        String brokerResponse;
+
+        while ((brokerResponse = clientInput.readLine()) != null) {
+
+            System.out.println("Broker: " + brokerResponse);
+            if (brokerResponse.equals("Close.")){
+                break;
+            }
+
+            if(brokerResponse.equals("Service not found")){
+                break;
+            }
+
+            if(brokerResponse.equals("Service FOUND")){
+                break;
+            }
+
+            if (request != null) {
+                clientOutput.println(request);
+            }
+        }
+        clientSocket.close();
+    }
+
+    private void unpackData(){
+
+    }
+
+    public void sendRequest(String request, String candidateId){
+        build();
+        packData(request, candidateId);
+    }
 }

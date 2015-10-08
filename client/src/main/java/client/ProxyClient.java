@@ -80,10 +80,12 @@ public class ProxyClient {
             forwardRequest(entity);
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ServiceNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
-    private void forwardRequest(String request) throws IOException {
+    private void forwardRequest(String request) throws IOException, ServiceNotFoundException {
         String brokerResponse;
 
         while ((brokerResponse = clientInput.readLine()) != null) {
@@ -94,7 +96,7 @@ public class ProxyClient {
             }
 
             if(brokerResponse.equals("Service not found")){
-                break;
+                throw new ServiceNotFoundException();
             }
 
             if(brokerResponse.equals("Service FOUND")){

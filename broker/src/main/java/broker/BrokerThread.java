@@ -59,6 +59,7 @@ public class BrokerThread implements Runnable {
                 }
             } catch (ServiceNotFoundException e) {
                 clientOut.println("Service not found");
+                break;
             }
         }
 

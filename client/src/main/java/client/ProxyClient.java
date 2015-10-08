@@ -1,5 +1,6 @@
 package client;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
@@ -90,6 +91,8 @@ public class ProxyClient {
     private void forwardRequest(String request) throws IOException, ServiceNotFoundException {
         String brokerResponse;
 
+        System.out.println(request);
+
         while ((brokerResponse = clientInput.readLine()) != null) {
 
             System.out.println("Broker: " + brokerResponse);
@@ -112,8 +115,10 @@ public class ProxyClient {
         clientSocket.close();
     }
 
-    private void unpackData(String response){
-
+    private Response unpackData(String responseFromBroker){
+        Response response;
+        response = new Gson().fromJson(responseFromBroker, Response.class);
+        return response;
     }
 
     public void sendRequest(String request, String candidateId){

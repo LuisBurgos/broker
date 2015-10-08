@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ref.SoftReference;
 import java.net.Socket;
 
 /**
@@ -81,7 +82,8 @@ public class ProxyClient {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ServiceNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
@@ -110,7 +112,7 @@ public class ProxyClient {
         clientSocket.close();
     }
 
-    private void unpackData(){
+    private void unpackData(String response){
 
     }
 

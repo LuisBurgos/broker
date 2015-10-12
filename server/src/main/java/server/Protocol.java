@@ -12,7 +12,7 @@ public class Protocol {
         String theOutput = null;
 
         if(state == WAITING) {
-            theOutput = "Connected to Broker";
+            theOutput = theInput;
             state = ATENDING;
         } else if(state == ATENDING){
             if (!theInput.equals("Close.")) {
@@ -23,6 +23,7 @@ public class Protocol {
             }
         }
 
+        System.out.println("OUTPUT" + theOutput);
         return theOutput;
     }
 }

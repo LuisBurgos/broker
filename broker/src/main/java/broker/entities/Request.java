@@ -1,4 +1,4 @@
-package broker;
+package broker.entities;
 
 /**
  * Created by luisburgos on 2/10/15.

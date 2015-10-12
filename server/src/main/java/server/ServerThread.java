@@ -46,7 +46,7 @@ public class ServerThread implements Runnable {
                 Request request = new Gson().fromJson(outputLine, Request.class);
                 
                 if(request.getType() == BrokerActions.EXECUTE_SERVICE){
-                    proxyServer.callService(request.getServiceName());
+                    proxyServer.callService(request.getServiceName(), request.getCandidateId());
                 }
                 
                 //socketOut.println(inputLine);

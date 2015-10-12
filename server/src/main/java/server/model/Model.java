@@ -1,5 +1,6 @@
 package server.model;
 
+import Exception.ServerErrorException;
 import server.events.Event;
 import server.misc.Observable;
 import server.misc.Observer;
@@ -54,21 +55,24 @@ public abstract class Model extends Observable {
         return setOfObservers.get(eventType);
     }
 
-    public void callFunctionByName(Class mClass, Class targetClass, String name, Object...params){
+    public void callFunctionByName(Class mClass, Class targetClass, String name, Object...params) throws ServerErrorException{
         Method method = null;
         try {
             method = mClass.getMethod(name, targetClass);
         } catch (SecurityException e) {
-            // ...
+           throw new ServerErrorException();
         } catch (NoSuchMethodException e) {
-            // ...
+            throw new ServerErrorException();
         }
 
         try {
             method.invoke(this, params);
         } catch (IllegalArgumentException e) {
+            throw new ServerErrorException();
         } catch (IllegalAccessException e) {
+            throw new ServerErrorException();
         } catch (InvocationTargetException e) {
+            throw new ServerErrorException();
         }
     }
 

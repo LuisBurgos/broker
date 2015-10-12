@@ -13,7 +13,6 @@ public class Protocol {
 
     public String processInput(String theInput) {
 
-        Request request;
         String theOutput = null;
 
         if(theInput == null){

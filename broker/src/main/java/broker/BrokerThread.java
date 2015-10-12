@@ -118,19 +118,29 @@ public class BrokerThread implements Runnable {
     }
 
     private void sendRequestExecution(String serviceName, String data) throws IOException {
+
         String responseFromProxyServer;
-
-        Request request = new Request();
-        request.setType(BrokerActions.EXECUTE_SERVICE);
-        request.setServiceName(serviceName);
-        request.setData(data);
-
-        serverOut.println(new Gson().toJson(request));
+        Request initialRequest;
 
         while ((responseFromProxyServer = servertIn.readLine()) != null) {
 
             System.out.println("ProxyServer response: " + responseFromProxyServer);
-            serverOut.println(serviceName);
+
+            Response response =  new Gson().fromJson(responseFromProxyServer, Response.class);
+            int responseType = response.getType();
+
+            if(responseType == ResponseTypes.CONNECTED){
+                initialRequest = new Request();
+                initialRequest.setType(BrokerActions.EXECUTE_SERVICE);
+                initialRequest.setServiceName(serviceName);
+                initialRequest.setData(data);
+                serverOut.println(new Gson().toJson(initialRequest));
+            }
+
+            if(responseType == ResponseTypes.REQUEST_RECEIVED){
+                System.out.println(response.getMessage());
+                break;
+            }
 
         }
         mProxyServerSocket.close();

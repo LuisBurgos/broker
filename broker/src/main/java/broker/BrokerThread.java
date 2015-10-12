@@ -81,7 +81,8 @@ public class BrokerThread implements Runnable {
                 } catch (ServiceNotFoundException e) {
                     e.printStackTrace();
                 }
-                startServiceExecution(serviceToExecute);
+                String data = request.getCandidateId();
+                startServiceExecution(serviceToExecute, data);
                 break;
             }
 
@@ -101,24 +102,31 @@ public class BrokerThread implements Runnable {
         System.out.println("Disconnect current thread #" + currentThread);
     }
 
-    private void startServiceExecution(Service serviceToExecute){
+    private void startServiceExecution(Service serviceToExecute, String data){
 
         String hostname = serviceToExecute.getIp();
-        int port         = (int)serviceToExecute.getPort();
+        int    port     = (int)serviceToExecute.getPort();
 
         try {
             connectToProxyServer(hostname, port);
             initializeBuffersToServer();
-            sendRequestExecution(serviceToExecute.getService());
+            sendRequestExecution(serviceToExecute.getService(), data);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    private void sendRequestExecution(String serviceName) throws IOException {
+    private void sendRequestExecution(String serviceName, String data) throws IOException {
         String responseFromProxyServer;
-        
+
+        Request request = new Request();
+        request.setType(BrokerActions.EXECUTE_SERVICE);
+        request.setServiceName(serviceName);
+        request.setCandidateId(data);
+
+        serverOut.println(new Gson().toJson(request));
+
         while ((responseFromProxyServer = servertIn.readLine()) != null) {
 
             System.out.println("ProxyServer response: " + responseFromProxyServer);

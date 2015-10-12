@@ -1,5 +1,8 @@
 package broker;
 
+import broker.entities.Service;
+import broker.exceptions.ServiceNotFoundException;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
@@ -15,7 +18,6 @@ public class Broker {
 
     public Broker(){
         services = new HashMap<String, Service>();
-        //this.registerService("addVoteToCandidateById", new Service("localhost", 3333, "addVoteToCandidateById"));
     }
 
     public void registerService(Service service){
@@ -26,7 +28,6 @@ public class Broker {
         if(!services.containsKey(name)){
             services.put(name, service);
         }
-        System.out.println(services);
     }
 
     public Service findService(String serviceName) throws ServiceNotFoundException {

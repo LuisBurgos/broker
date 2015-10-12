@@ -1,4 +1,4 @@
-package broker;
+package broker.exceptions;
 
 /**
  * Created by luisburgos on 27/09/15.

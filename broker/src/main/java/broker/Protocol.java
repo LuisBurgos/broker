@@ -1,9 +1,9 @@
 package broker;
 
+import broker.entities.Request;
+import broker.entities.Response;
+import broker.utils.ResponseTypes;
 import com.google.gson.Gson;
-
-import java.net.*;
-import java.io.*;
 
 public class Protocol {
     private static final int WAITING = 0;

@@ -1,5 +1,6 @@
 package server;
 
+import Exception.ServerErrorException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import server.model.entities.Service;
@@ -9,6 +10,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import server.model.Model;
+import server.model.Votations;
+import server.model.entities.Response;
 
 /**
  * Created by luisburgos on 2/10/15.
@@ -34,12 +40,21 @@ public class ProxyServer {
         }
     }
 
-    public void callService(String serviceName){
-           //Magia aqui porfavor...
+    public void callService(String serviceName, Object... params){
+        try {
+            Votations.getInstance().callFunctionByName(Votations.class, int.class, serviceName, params );
+        } catch (ServerErrorException ex) {
+            sendResponse(ServerResponses.FAILURE);
+        }
+        
+        sendResponse(ServerResponses.SUCCESS);
+        
     }
 
-    public void sendResponse(){
-
+    public void sendResponse(int responseType){
+        Response response = new Response();
+        response.setType(responseType);
+        brokerOutput.println(new Gson().toJson(response));
     }
 
     public void packData(){

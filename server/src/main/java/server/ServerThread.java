@@ -38,7 +38,7 @@ public class ServerThread implements Runnable {
 
             while ((inputLine = socketIn.readLine()) != null) {
                 //outputLine = kkp.processInput(inputLine);
-                System.out.println(inputLine);
+                System.out.println("INPUT" + inputLine);
                 
                 Protocol protocol = new Protocol();
                 outputLine = protocol.processInput(inputLine);
@@ -46,16 +46,15 @@ public class ServerThread implements Runnable {
                 Request request = new Gson().fromJson(outputLine, Request.class);
                 
                 if(request.getType() == BrokerActions.EXECUTE_SERVICE){
-                    proxyServer.callService(request.getServiceName());
+                    proxyServer.callService(request.getServiceName(),
+                            Integer.parseInt(request.getCandidateId()));
+                    break;
                 }
-                
-                //socketOut.println(inputLine);
-                //if (outputLine.equals("Bye"))
-                //  break;
+
             }
 
             socket.close();
-
+            System.out.println("Disconnect");
         } catch (IOException e) {
             e.printStackTrace();
         }

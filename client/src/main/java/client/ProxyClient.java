@@ -1,5 +1,6 @@
 package client;
 
+import client.entities.Request;
 import client.entities.Response;
 import client.exceptions.ServiceNotFoundException;
 import client.utils.BrokerActions;
@@ -102,10 +103,11 @@ public class ProxyClient {
             }
 
             if(responseType == ResponseTypes.SERVICE_FOUND){
-                String executeRequest;
-                executeRequest = packData(BrokerActions.EXECUTE_SERVICE,
-                        "addVoteToCandidateById", "1");
-                clientOutput.println(executeRequest);
+                Gson gson = new Gson();
+                Request requestHolder = gson.fromJson(request, Request.class);
+                requestHolder.setType(BrokerActions.EXECUTE_SERVICE);
+                String newRequestEntity = gson.toJson(requestHolder);
+                clientOutput.println(newRequestEntity);
             }
 
             if (responseType == ResponseTypes.CONNECTED) {

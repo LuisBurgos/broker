@@ -1,4 +1,4 @@
-package server;
+package server.utils;
 
 import com.google.gson.Gson;
 import server.model.entities.Response;

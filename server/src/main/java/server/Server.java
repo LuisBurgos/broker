@@ -1,5 +1,13 @@
 package server;
 
+import server.events.Event;
+import server.events.NewCandidate;
+import server.events.Vote;
+import server.model.Model;
+import server.model.Votations;
+import server.views.BarChartView;
+import server.views.PieChartView;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -47,6 +55,24 @@ public class Server {
     }
 
     public static void main(String[] args) {
+
+        Event voteEvent         = new Vote("New vote");
+        Event newCandidateEvent = new NewCandidate("New candidate");
+
+        //Votations
+        Model votations = Votations.getInstance(); //Initialize the model loads the data.
+
+        //Views
+        PieChartView pieChartView = new PieChartView();
+        BarChartView barChartView = new BarChartView();
+
+        //Register
+        votations.register(voteEvent, pieChartView);
+        votations.register(voteEvent, barChartView);
+
+        votations.register(newCandidateEvent, pieChartView);
+        votations.register(newCandidateEvent, barChartView);
+
         Server server = new Server();
         try {
             server.initializeSocket();

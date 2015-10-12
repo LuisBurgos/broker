@@ -4,8 +4,12 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
+import server.events.Event;
+import server.misc.Observer;
+import server.model.Votations;
+import server.model.entities.Candidate;
 
-public class PieChartView {
+public class PieChartView implements Observer {
 
     private ChartFrame frame;
     private JFreeChart chart;
@@ -33,9 +37,9 @@ public class PieChartView {
     }
 
     private void loadData() {
-        /*for(Candidate c : Votations.getInstance().getCandidates()){
+        for(Candidate c : Votations.getInstance().getCandidates()){
             data.setValue(c.getName(), c.getVotes());
-        }*/
+        }
     }
 
     public void display() {
@@ -44,4 +48,7 @@ public class PieChartView {
         frame.repaint();
     }
 
+    public void update(Event event) {
+        display();
+    }
 }

@@ -6,10 +6,14 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+import server.events.Event;
+import server.misc.Observer;
+import server.model.Votations;
+import server.model.entities.Candidate;
 
 import java.awt.*;
 
-public class BarChartView {
+public class BarChartView implements Observer {
 
     private ChartFrame frame;
     private JFreeChart chart;
@@ -36,9 +40,9 @@ public class BarChartView {
     }
 
     private void loadData() {
-        /*for(Candidate c : Votations.getInstance().getCandidates()){
+        for(Candidate c : Votations.getInstance().getCandidates()){
             data.setValue(c.getVotes(), c.getParty(), c.getName());
-        }*/
+        }
     }
 
     public void display() {
@@ -46,7 +50,6 @@ public class BarChartView {
         loadData();
         frame.repaint();
     }
-
 
     public void update(Event event) {
         display();

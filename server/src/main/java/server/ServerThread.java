@@ -3,6 +3,8 @@ package server;
 import com.google.gson.Gson;
 import server.model.entities.Request;
 import server.model.entities.Response;
+import server.utils.BrokerActions;
+import server.utils.Protocol;
 import server.utils.ResponseTypes;
 
 import java.io.BufferedReader;

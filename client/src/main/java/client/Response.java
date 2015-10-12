@@ -8,6 +8,15 @@ public class Response {
     private int type;
     private String message;
     private String error;
+    private String data;
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
 
     public int getType() {
         return type;

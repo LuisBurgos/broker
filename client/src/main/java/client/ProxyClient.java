@@ -2,12 +2,13 @@ package client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.omg.CORBA.Request;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.ref.SoftReference;
 import java.net.Socket;
 
 /**
@@ -17,11 +18,10 @@ public class ProxyClient {
 
     private static final int BROKER_PORT_NUMBER = 5555;
     private static final String BASE_HOSTNAME = "localhost";
-    private String entity;
 
-    Socket clientSocket;
-    PrintWriter clientOutput;
-    BufferedReader clientInput;
+    private Socket clientSocket;
+    private PrintWriter clientOutput;
+    private BufferedReader clientInput;
 
     public void build(){
         try {
@@ -31,6 +31,24 @@ public class ProxyClient {
             System.err.println("Couldn't get I/O for the connection to " + BASE_HOSTNAME);
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    public void sendRequest(int type, String serviceName, String data){
+        build();
+        String request;
+        request = packData(type, serviceName, data);
+        sendRequest(request);
+    }
+
+    public void sendRequest(String forwardRequest){
+        try {
+            startRequestProcessing(forwardRequest);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        } catch (ServiceNotFoundException e) {
+            final JPanel panel = new JPanel();
+            JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -45,74 +63,14 @@ public class ProxyClient {
         );
     }
 
-    private void startProcessing() throws IOException {
-
-        BufferedReader userInput = new BufferedReader(
-                new InputStreamReader(System.in)
-        );
-
-        String brokerResponse, fromUser;
-
-        while ((brokerResponse = clientInput.readLine()) != null) {
-
-            System.out.println("Broker: " + brokerResponse);
-            if (brokerResponse.equals("Close.")){
-                break;
-            }
-
-            fromUser = userInput.readLine();
-            if (fromUser != null) {
-                if(fromUser.equals("send")){
-                    clientOutput.println(entity);
-                    System.out.println("SEND: " + entity);
-                }
-                System.out.println("ProxyClient: " + fromUser);
-                clientOutput.println(fromUser);
-            }
-        }
-    }
-
-    private void packData(String serviceName, String candidateId){
+    private String packData(int type, String serviceName, String candidateId){
+        String entity;
         JsonObject json = new JsonObject();
-        json.addProperty("type", 1);
+        json.addProperty("type", type);
         json.addProperty("serviceName", serviceName);
         json.addProperty("candidateId", candidateId);
         entity = json.toString();
-        try {
-            forwardRequest(entity);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ServiceNotFoundException e) {
-            //e.printStackTrace();
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private void forwardRequest(String request) throws IOException, ServiceNotFoundException {
-        String brokerResponse;
-
-        System.out.println(request);
-
-        while ((brokerResponse = clientInput.readLine()) != null) {
-
-            System.out.println("Broker: " + brokerResponse);
-            if (brokerResponse.equals("Close.")){
-                break;
-            }
-
-            if(brokerResponse.equals("Service not found")){
-                throw new ServiceNotFoundException();
-            }
-
-            if(brokerResponse.equals("Service FOUND")){
-                break;
-            }
-
-            if (request != null) {
-                clientOutput.println(request);
-            }
-        }
-        clientSocket.close();
+        return entity;
     }
 
     private Response unpackData(String responseFromBroker){
@@ -121,8 +79,37 @@ public class ProxyClient {
         return response;
     }
 
-    public void sendRequest(String request, String candidateId){
-        build();
-        packData(request, candidateId);
+    private void startRequestProcessing(String request) throws IOException, ServiceNotFoundException {
+
+        String responseFromBroker;
+
+        while ((responseFromBroker = clientInput.readLine()) != null) {
+
+            System.out.println("Broker response: " + responseFromBroker);
+
+            Response response = unpackData(responseFromBroker);
+            int responseType = response.getType();
+
+            if (responseType == ResponseTypes.DISCONNECTED){
+                break;
+            }
+
+            if(responseType == ResponseTypes.SERVICE_NOT_FOUND){
+                throw new ServiceNotFoundException();
+            }
+
+            if(responseType == ResponseTypes.SERVICE_FOUND){
+                String executeRequest;
+                executeRequest = packData(BrokerActions.EXECUTE_SERVICE,
+                        "addVoteToCandidateById", "1");
+                clientOutput.println(executeRequest);
+            }
+
+            if (responseType == ResponseTypes.CONNECTED) {
+                clientOutput.println(request);
+            }
+        }
+        clientSocket.close();
     }
+
 }

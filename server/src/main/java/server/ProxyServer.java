@@ -74,7 +74,7 @@ public class ProxyServer {
         JsonObject json = new JsonObject();
         json.addProperty("type", BrokerActions.REGISTER_SERVICE);
         json.addProperty("serviceName", "addVoteToCandidateById");
-        json.addProperty("candidateId", new Gson().toJson(service));
+        json.addProperty("data", new Gson().toJson(service));
         entity = json.toString();
         brokerOutput.println(entity);
     }

@@ -81,13 +81,13 @@ public class BrokerThread implements Runnable {
                 } catch (ServiceNotFoundException e) {
                     e.printStackTrace();
                 }
-                String data = request.getCandidateId();
+                String data = request.getData();
                 startServiceExecution(serviceToExecute, data);
                 break;
             }
 
             if(request.getType() == BrokerActions.REGISTER_SERVICE){
-                Service service = new Gson().fromJson(request.getCandidateId(), Service.class);
+                Service service = new Gson().fromJson(request.getData(), Service.class);
                 mBroker.registerService(service);
                 break;
             }
@@ -105,7 +105,7 @@ public class BrokerThread implements Runnable {
     private void startServiceExecution(Service serviceToExecute, String data){
 
         String hostname = serviceToExecute.getIp();
-        int    port     = (int)serviceToExecute.getPort();
+        int    port     = serviceToExecute.getPort();
 
         try {
             connectToProxyServer(hostname, port);
@@ -123,7 +123,7 @@ public class BrokerThread implements Runnable {
         Request request = new Request();
         request.setType(BrokerActions.EXECUTE_SERVICE);
         request.setServiceName(serviceName);
-        request.setCandidateId(data);
+        request.setData(data);
 
         serverOut.println(new Gson().toJson(request));
 

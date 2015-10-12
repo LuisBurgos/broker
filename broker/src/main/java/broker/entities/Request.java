@@ -7,7 +7,7 @@ public class Request {
 
     private int type;
     private String serviceName;
-    private String candidateId;
+    private String data;
 
     public int getType() {
         return type;
@@ -25,11 +25,11 @@ public class Request {
         this.serviceName = serviceName;
     }
 
-    public String getCandidateId() {
-        return candidateId;
+    public String getData() {
+        return data;
     }
 
-    public void setCandidateId(String candidateId) {
-        this.candidateId = candidateId;
+    public void setData(String data) {
+        this.data = data;
     }
 }

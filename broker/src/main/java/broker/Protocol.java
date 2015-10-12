@@ -13,30 +13,22 @@ public class Protocol {
 
     public String processInput(String theInput) {
 
-        Request request = null;
+        Request request;
         String theOutput = null;
 
+        if(theInput == null){
+            Response response = new Response();
+            response.setType(ResponseTypes.CONNECTED);
+            theOutput = new Gson().toJson(response);
+        }
+
         if(theInput != null){
-            request = new Gson().fromJson(theInput, Request.class);
-            //System.out.println(request.s());
-            if(request.getType() == 1){
-                return theOutput = request.getServiceName();
+            if(theInput.startsWith("{") && theInput.endsWith("}")){
+                theOutput = theInput;
+            }else {
+                theOutput = "error";
             }
         }
-
-
-        if(state == WAITING) {
-            theOutput = "Connected to Broker";
-            state = ATENDING;
-        } else if(state == ATENDING){
-            if (!theInput.equals("Close.")) {
-                //theOutput = request.getServiceName();
-            } else {
-                theOutput = "Close.";
-                state = WAITING;
-            }
-        }
-
         return theOutput;
     }
 }

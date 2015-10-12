@@ -1,6 +1,6 @@
 package server.model;
 
-import Exception.ServerErrorException;
+import exceptions.ServerErrorException;
 import server.events.Event;
 import server.misc.Observable;
 import server.misc.Observer;

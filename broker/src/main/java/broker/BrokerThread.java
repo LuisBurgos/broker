@@ -3,6 +3,7 @@ package broker;
 import broker.entities.Request;
 import broker.entities.Response;
 import broker.entities.Service;
+import broker.exceptions.ServerErrorException;
 import broker.exceptions.ServiceNotFoundException;
 import broker.utils.BrokerActions;
 import broker.utils.ResponseTypes;
@@ -113,11 +114,13 @@ public class BrokerThread implements Runnable {
             sendRequestExecution(serviceToExecute.getService(), data);
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ServerErrorException e) {
+            System.err.println(e.getMessage());
         }
 
     }
 
-    private void sendRequestExecution(String serviceName, String data) throws IOException {
+    private void sendRequestExecution(String serviceName, String data) throws IOException, ServerErrorException {
 
         String responseFromProxyServer;
         Request initialRequest;
@@ -140,6 +143,10 @@ public class BrokerThread implements Runnable {
             if(responseType == ResponseTypes.REQUEST_RECEIVED){
                 System.out.println(response.getMessage());
                 break;
+            }
+
+            if(responseType == ResponseTypes.REQUEST_ERROR){
+                throw new ServerErrorException();
             }
 
         }

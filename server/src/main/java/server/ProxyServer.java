@@ -1,6 +1,6 @@
 package server;
 
-import Exception.ServerErrorException;
+import exceptions.ServerErrorException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import server.model.entities.Service;
@@ -10,9 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import server.model.Model;
+
 import server.model.Votations;
 import server.model.entities.Response;
 

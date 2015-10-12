@@ -23,7 +23,9 @@ public class Protocol {
             if(theInput.startsWith("{") && theInput.endsWith("}")){
                 theOutput = theInput;
             }else {
-                theOutput = "error";
+                Response response = new Response();
+                response.setType(ResponseTypes.REQUEST_ERROR);
+                theOutput = new Gson().toJson(response);
             }
         }
         return theOutput;

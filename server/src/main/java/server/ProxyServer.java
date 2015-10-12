@@ -33,8 +33,8 @@ public class ProxyServer {
         }
     }
 
-    public void callService(){
-
+    public void callService(String serviceName){
+           //Magia aqui porfavor...
     }
 
     public void sendResponse(){

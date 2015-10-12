@@ -26,7 +26,7 @@ public class Server {
 
         try {
             while (listening) {
-                new Thread(new ServerThread(socketServer.accept())).start();;
+                new Thread(new ServerThread(socketServer.accept(),proxyServer)).start();;
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + PORT_NUMBER_SERVER);

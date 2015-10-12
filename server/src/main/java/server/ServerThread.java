@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,11 +17,13 @@ public class ServerThread implements Runnable {
 
     private PrintWriter socketOut;
     private BufferedReader socketIn;
+    private ProxyServer proxyServer;
 
-    public ServerThread(Socket socket) {
+    public ServerThread(Socket socket, ProxyServer proxyServer) {
         this.socket = socket;
         System.out.println("thread #"+ contadorDeThreads + " on Server");
         contadorDeThreads++;
+        this.proxyServer = proxyServer;
     }
 
     private void connect(){
@@ -34,7 +37,17 @@ public class ServerThread implements Runnable {
             while ((inputLine = socketIn.readLine()) != null) {
                 //outputLine = kkp.processInput(inputLine);
                 System.out.println(inputLine);
-                socketOut.println(inputLine);
+                
+                Protocol protocol = new Protocol();
+                outputLine = protocol.processInput(inputLine);
+                
+                Request request = new Gson().fromJson(outputLine, Request.class);
+                
+                if(request.getType() == BrokerActions.EXECUTE_SERVICE){
+                    proxyServer.callService(request.getServiceName());
+                }
+                
+                //socketOut.println(inputLine);
                 //if (outputLine.equals("Bye"))
                 //  break;
             }

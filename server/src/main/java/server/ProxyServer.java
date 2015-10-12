@@ -1,5 +1,8 @@
 package server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,9 +18,9 @@ public class ProxyServer {
     private static final String BASE_HOSTNAME = "localhost";
     private String entity;
 
-    Socket brokerSocket;
-    PrintWriter brokerOutput;
-    BufferedReader brokerInput;
+    private Socket brokerSocket;
+    private PrintWriter brokerOutput;
+    private BufferedReader brokerInput;
 
     public void build(){
         try {
@@ -30,20 +33,8 @@ public class ProxyServer {
         }
     }
 
-    private void connectToBroker() throws IOException {
-        brokerSocket = new Socket(BASE_HOSTNAME, BROKER_PORT_NUMBER);
-    }
-
-    private void initializeBuffers() throws IOException {
-        brokerOutput = new PrintWriter(brokerSocket.getOutputStream(), true);
-        brokerInput = new BufferedReader(
-                new InputStreamReader(brokerSocket.getInputStream())
-        );
-    }
-
-
     public void callService(){
-        brokerOutput.println("{\"ip\":localhost\"2222\",\"port\":\"2222\",\"service\":\"addVoteToCandidateById\"}");
+
     }
 
     public void sendResponse(){
@@ -56,6 +47,31 @@ public class ProxyServer {
 
     public void unpackData(){
 
+    }
+
+    public void registerServiceToBroker (){
+        Service service = new Service("localhost",
+                                      Server.PORT_NUMBER_SERVER,
+                                      "addVoteToCandidateById"
+        );
+        String entity;
+        JsonObject json = new JsonObject();
+        json.addProperty("type", BrokerActions.REGISTER_SERVICE);
+        json.addProperty("serviceName", "addVoteToCandidateById");
+        json.addProperty("candidateId", new Gson().toJson(service));
+        entity = json.toString();
+        brokerOutput.println(entity);
+    }
+
+    private void connectToBroker() throws IOException {
+        brokerSocket = new Socket(BASE_HOSTNAME, BROKER_PORT_NUMBER);
+    }
+
+    private void initializeBuffers() throws IOException {
+        brokerOutput = new PrintWriter(brokerSocket.getOutputStream(), true);
+        brokerInput = new BufferedReader(
+                new InputStreamReader(brokerSocket.getInputStream())
+        );
     }
 
 }

@@ -8,7 +8,7 @@ import java.net.ServerSocket;
  */
 public class Server {
 
-    private static final int PORT_NUMBER_SERVER = 2222;
+    public static final int PORT_NUMBER_SERVER = 2222;
 
     private ProxyServer proxyServer = new ProxyServer();
     private ServerSocket socketServer;
@@ -43,7 +43,7 @@ public class Server {
      */
     public void registerServiceIntoBroker(){
         proxyServer.build();
-        proxyServer.callService();
+        proxyServer.registerServiceToBroker();
     }
 
     public static void main(String[] args) {

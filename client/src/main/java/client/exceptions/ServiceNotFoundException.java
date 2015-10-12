@@ -1,4 +1,4 @@
-package client;
+package client.exceptions;
 
 /**
  * Created by luisburgos on 27/09/15.

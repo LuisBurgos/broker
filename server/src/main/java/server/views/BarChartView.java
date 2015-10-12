@@ -1,4 +1,4 @@
-package server;
+package server.views;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;

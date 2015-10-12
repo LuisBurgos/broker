@@ -2,7 +2,6 @@ package broker;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.HashMap;
 
 /**
@@ -10,24 +9,28 @@ import java.util.HashMap;
  */
 public class Broker {
 
-    private static int portNumber = 5555;
+    private static final int PORT_NUMBER_BROKER = 5555;
     private HashMap<String,Service> services;
-    private ServerSocket serverSocket;
+    private ServerSocket serverSocketBroker;
 
     public Broker(){
-        services = new HashMap<>();
-        //Dummy services
-        this.addService("Consulta", new Service("localhost",3333, "Consulta"));
-        this.addService("Alta", new Service("localhost",3333, "Alta"));
-        this.addService("Baja", new Service("localhost",3333, "Baja"));
-        this.addService("Cambio", new Service("localhost", 3333, "Cambio"));
+        services = new HashMap<String, Service>();
+        //this.registerService("addVoteToCandidateById", new Service("localhost", 3333, "addVoteToCandidateById"));
     }
 
-    public void addService(String name, Service service){
-        services.put(name, service);
+    public void registerService(Service service){
+        registerService(service.getService(), service);
+    }
+
+    public void registerService(String name, Service service){
+        if(!services.containsKey(name)){
+            services.put(name, service);
+        }
+        System.out.println(services);
     }
 
     public Service findService(String serviceName) throws ServiceNotFoundException {
+        System.out.println(services);
         if(services.containsKey(serviceName)){
             return services.get(serviceName);
         }else{
@@ -39,18 +42,17 @@ public class Broker {
         boolean listening = true;
 
         try {
-            serverSocket = new ServerSocket(portNumber);
+            serverSocketBroker = new ServerSocket(PORT_NUMBER_BROKER);
             while (listening) {
-                new Thread(new BrokerThread(this, serverSocket.accept())).start();
+                new Thread(new BrokerThread(this, serverSocketBroker.accept())).start();
             }
         } catch (IOException e) {
-            System.err.println("Could not listen on port " + portNumber);
+            System.err.println("Could not listen on port " + PORT_NUMBER_BROKER);
             System.exit(-1);
         }
     }
 
     public static void main(String[] args) throws IOException {
-
         Broker broker = new Broker();
         broker.acceptConnections();
     }

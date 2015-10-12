@@ -14,20 +14,18 @@ public class ServerThread implements Runnable {
     private Socket socket = null;
     private static int contadorDeThreads = 1;
 
+    private PrintWriter socketOut;
+    private BufferedReader socketIn;
+
     public ServerThread(Socket socket) {
         this.socket = socket;
         System.out.println("thread #"+ contadorDeThreads + " on Server");
         contadorDeThreads++;
     }
 
-    public void run() {
-        try (
-                PrintWriter socketOut = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader socketIn = new BufferedReader(
-                        new InputStreamReader(
-                                socket.getInputStream()));
-        ) {
-
+    private void connect(){
+        try {
+            initializeBuffers();
             String inputLine, outputLine;
             //Protocol kkp = new Protocol();
             //outputLine = kkp.processInput(null);
@@ -38,7 +36,7 @@ public class ServerThread implements Runnable {
                 System.out.println(inputLine);
                 socketOut.println(inputLine);
                 //if (outputLine.equals("Bye"))
-                  //  break;
+                //  break;
             }
 
             socket.close();
@@ -46,6 +44,17 @@ public class ServerThread implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void run() {
+        connect();
+    }
+
+    private void initializeBuffers() throws IOException {
+        socketOut = new PrintWriter(socket.getOutputStream(), true);
+        socketIn = new BufferedReader(
+                new InputStreamReader(socket.getInputStream())
+        );
     }
 
 }

@@ -1,5 +1,7 @@
 package broker;
 
+import com.google.gson.Gson;
+
 import java.net.*;
 import java.io.*;
 
@@ -10,20 +12,23 @@ public class Protocol {
     private int state = WAITING;
 
     public String processInput(String theInput) {
+
+        Request request;
         String theOutput = null;
 
-        if(state == WAITING) {
-            theOutput = "Connected to Broker";
-            state = ATENDING;
-        } else if(state == ATENDING){
-            if (!theInput.equals("Close.")) {
-                theOutput = theInput;
-            } else {
-                theOutput = "Close.";
-                state = WAITING;
-            }
+        if(theInput == null){
+            Response response = new Response();
+            response.setType(ResponseTypes.CONNECTED);
+            theOutput = new Gson().toJson(response);
         }
 
+        if(theInput != null){
+            if(theInput.startsWith("{") && theInput.endsWith("}")){
+                theOutput = theInput;
+            }else {
+                theOutput = "error";
+            }
+        }
         return theOutput;
     }
 }

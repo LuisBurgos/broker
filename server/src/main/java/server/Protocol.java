@@ -1,5 +1,9 @@
 package server;
 
+import com.google.gson.Gson;
+import server.model.entities.Response;
+import server.utils.ResponseTypes;
+
 public class Protocol {
     private static final int WAITING = 0;
     private static final int ATENDING = 1;
@@ -7,23 +11,21 @@ public class Protocol {
     private int state = WAITING;
 
     public String processInput(String theInput) {
-
-
         String theOutput = null;
 
-        if(state == WAITING) {
-            theOutput = theInput;
-            state = ATENDING;
-        } else if(state == ATENDING){
-            if (!theInput.equals("Close.")) {
-                theOutput = theInput;
-            } else {
-                theOutput = "Close.";
-                state = WAITING;
-            }
+        if(theInput == null){
+            Response response = new Response();
+            response.setType(ResponseTypes.CONNECTED);
+            theOutput = new Gson().toJson(response);
         }
 
-        System.out.println("OUTPUT" + theOutput);
+        if(theInput != null){
+            if(theInput.startsWith("{") && theInput.endsWith("}")){
+                theOutput = theInput;
+            }else {
+                theOutput = "error";
+            }
+        }
         return theOutput;
     }
 }

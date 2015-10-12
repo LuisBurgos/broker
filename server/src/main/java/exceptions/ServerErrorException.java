@@ -3,17 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Exception;
+package exceptions;
 
 /**
  *
  * @author JoseJulio
  */
 public class ServerErrorException extends Exception{
-    
+
+    private final String errorMessage = "An error has occurred on the server";
+
     @Override
     public String getMessage(){
-        return "Ha ocurrido un error en el servidor";
+        return errorMessage;
     }
-    
+
 }
+

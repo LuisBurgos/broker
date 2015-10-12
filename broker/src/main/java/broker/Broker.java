@@ -28,7 +28,6 @@ public class Broker {
         if(!services.containsKey(name)){
             services.put(name, service);
         }
-        System.out.println(services);
     }
 
     public Service findService(String serviceName) throws ServiceNotFoundException {

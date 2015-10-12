@@ -21,11 +21,11 @@ public class BrokerThread implements Runnable {
 
     private Broker mBroker;
     private Socket mSocketBroker;
+    private Socket mProxyServerSocket;
     private static int totalThreads = 0;
 
     private PrintWriter clientOut;
     private BufferedReader clientIn;
-
     private PrintWriter serverOut;
     private BufferedReader servertIn;
 
@@ -37,7 +37,7 @@ public class BrokerThread implements Runnable {
 
     public void run(){
         try{
-            initializeBuffers();
+            initializeBuffersToClient();
             connect();
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,7 +75,13 @@ public class BrokerThread implements Runnable {
             }
 
             if(request.getType() == BrokerActions.EXECUTE_SERVICE){
-                System.out.println("EXECUTING: " + request.getServiceName());
+                Service serviceToExecute = null;
+                try {
+                    serviceToExecute = mBroker.findService(request.getServiceName());
+                } catch (ServiceNotFoundException e) {
+                    e.printStackTrace();
+                }
+                startServiceExecution(serviceToExecute);
                 break;
             }
 
@@ -89,19 +95,54 @@ public class BrokerThread implements Runnable {
                 break;
             }
 
-            //Parche loco
-            if(processedInputLine.startsWith("{")){ }
-
         }
 
         mSocketBroker.close();
         System.out.println("Disconnect current thread #" + currentThread);
     }
 
-    private void initializeBuffers() throws IOException {
+    private void startServiceExecution(Service serviceToExecute){
+
+        String hostname = serviceToExecute.getIp();
+        int port         = (int)serviceToExecute.getPort();
+
+        try {
+            connectToProxyServer(hostname, port);
+            initializeBuffersToServer();
+            sendRequestExecution(serviceToExecute.getService());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void sendRequestExecution(String serviceName) throws IOException {
+        String responseFromProxyServer;
+        
+        while ((responseFromProxyServer = servertIn.readLine()) != null) {
+
+            System.out.println("ProxyServer response: " + responseFromProxyServer);
+            serverOut.println(serviceName);
+
+        }
+        mProxyServerSocket.close();
+    }
+
+    private void connectToProxyServer(String hostname, int portNumber) throws IOException {
+        mProxyServerSocket = new Socket(hostname, portNumber);
+    }
+
+    private void initializeBuffersToClient() throws IOException {
         clientOut = new PrintWriter(mSocketBroker.getOutputStream(), true);
         clientIn = new BufferedReader(
                 new InputStreamReader(mSocketBroker.getInputStream())
+        );
+    }
+
+    private void initializeBuffersToServer() throws IOException {
+        serverOut = new PrintWriter(mProxyServerSocket.getOutputStream(), true);
+        servertIn = new BufferedReader(
+                new InputStreamReader(mProxyServerSocket.getInputStream())
         );
     }
 

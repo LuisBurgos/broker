@@ -1,5 +1,7 @@
 package broker;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -39,28 +41,51 @@ public class BrokerThread implements Runnable {
     private void connect() throws IOException {
         final int currentThread = totalThreads;
 
-        String inputLine, outputLine;
+        String inputLine, processedInputLine;
         Protocol protocol = new Protocol();
-        outputLine = protocol.processInput(null);
-        clientOut.println(outputLine);
+        processedInputLine = protocol.processInput(null);
+        clientOut.println(processedInputLine);
 
         while((inputLine = clientIn.readLine()) != null ){
 
-            outputLine = protocol.processInput(inputLine);
-            System.out.println("Current thread #" + currentThread +" requests: " + outputLine);
+            processedInputLine = protocol.processInput(inputLine);
+            System.out.println("Current thread #" + currentThread + " requests: " + processedInputLine);
 
-            if(outputLine.equals("Close.")){
-                break;
-            }
+            Request request = new Gson().fromJson(processedInputLine, Request.class);
 
-            try {
-                if(mBroker.findService(outputLine) != null){
-                    clientOut.println("Service FOUND");
+            if(request.getType() == BrokerActions.FIND_SERVICE){
+                try {
+                    if(mBroker.findService(request.getServiceName()) != null){
+                        Response response = new Response();
+                        response.setType(ResponseTypes.SERVICE_FOUND);
+                        clientOut.println(new Gson().toJson(response));
+                    }
+                } catch (ServiceNotFoundException e) {
+                    Response response = new Response();
+                    response.setType(ResponseTypes.SERVICE_NOT_FOUND);
+                    clientOut.println(new Gson().toJson(response));
+                    break;
                 }
-            } catch (ServiceNotFoundException e) {
-                clientOut.println("Service not found");
+            }
+
+            if(request.getType() == BrokerActions.EXECUTE_SERVICE){
+                System.out.println("EXECUTING: " + request.getServiceName());
                 break;
             }
+
+            if(request.getType() == BrokerActions.REGISTER_SERVICE){
+                Service service = new Gson().fromJson(request.getCandidateId(), Service.class);
+                mBroker.registerService(service);
+                break;
+            }
+
+            if(processedInputLine.equals("Close.")){
+                break;
+            }
+
+            //Parche loco
+            if(processedInputLine.startsWith("{")){ }
+
         }
 
         mSocketBroker.close();

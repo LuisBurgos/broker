@@ -15,8 +15,7 @@ public class Broker {
 
     public Broker(){
         services = new HashMap<String, Service>();
-        this.registerService("addVoteToCandidateById", new Service("localhost", 3333, "addVoteToCandidateById"));
-        //this.registerService("newCandidate", new Service("localhost", 3333, "newCandidate"));
+        //this.registerService("addVoteToCandidateById", new Service("localhost", 3333, "addVoteToCandidateById"));
     }
 
     public void registerService(Service service){
@@ -27,10 +26,11 @@ public class Broker {
         if(!services.containsKey(name)){
             services.put(name, service);
         }
+        System.out.println(services);
     }
 
     public Service findService(String serviceName) throws ServiceNotFoundException {
-        System.out.println(services.toString());
+        System.out.println(services);
         if(services.containsKey(serviceName)){
             return services.get(serviceName);
         }else{

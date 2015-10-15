@@ -33,7 +33,7 @@ public class Votations extends Model {
 
     public void addVoteToCandidateById(int id){
         candidates.get(id - 1).incrementVotes();
-        //System.out.println("Votes to " + candidates.get(id - 1).getFullName());
+        System.out.println("Votes to " + candidates.get(id - 1).getFullName());
         CandidatesToJSON.saveCandidates(candidates);
         notify(new Vote());
     }

@@ -1,4 +1,4 @@
-package broker;
+package client.utils;
 
 /**
  * Created by luisburgos on 11/10/15.

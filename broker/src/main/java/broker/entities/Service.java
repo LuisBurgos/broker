@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package broker;
+package broker.entities;
 
 /**
  *
@@ -12,7 +12,7 @@ package broker;
 public class Service {
     
     private String ip;
-    private long port;
+    private int port;
     private String service;
     
     public Service(String ip, int port, String services){
@@ -29,11 +29,11 @@ public class Service {
         this.ip = ip;
     }
 
-    public long getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(long port) {
+    public void setPort(int port) {
         this.port = port;
     }
 

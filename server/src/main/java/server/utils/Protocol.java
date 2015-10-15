@@ -1,9 +1,8 @@
-package broker;
+package server.utils;
 
-import broker.entities.Request;
-import broker.entities.Response;
-import broker.utils.ResponseTypes;
 import com.google.gson.Gson;
+import server.model.entities.Response;
+import server.utils.ResponseTypes;
 
 public class Protocol {
     private static final int WAITING = 0;
@@ -12,7 +11,6 @@ public class Protocol {
     private int state = WAITING;
 
     public String processInput(String theInput) {
-
         String theOutput = null;
 
         if(theInput == null){
@@ -25,7 +23,9 @@ public class Protocol {
             if(theInput.startsWith("{") && theInput.endsWith("}")){
                 theOutput = theInput;
             }else {
-                theOutput = "error";
+                Response response = new Response();
+                response.setType(ResponseTypes.REQUEST_ERROR);
+                theOutput = new Gson().toJson(response);
             }
         }
         return theOutput;

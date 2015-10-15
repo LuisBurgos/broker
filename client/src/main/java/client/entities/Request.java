@@ -1,4 +1,4 @@
-package server.model.entities;
+package client.entities;
 
 /**
  * Created by luisburgos on 2/10/15.

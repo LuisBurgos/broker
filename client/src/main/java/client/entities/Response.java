@@ -1,4 +1,4 @@
-package client;
+package client.entities;
 
 /**
  * Created by luisburgos on 8/10/15.

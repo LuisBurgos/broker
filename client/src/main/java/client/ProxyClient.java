@@ -1,8 +1,12 @@
 package client;
 
+import client.entities.Request;
+import client.entities.Response;
+import client.exceptions.ServiceNotFoundException;
+import client.utils.BrokerActions;
+import client.utils.ResponseTypes;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.omg.CORBA.Request;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -63,12 +67,12 @@ public class ProxyClient {
         );
     }
 
-    private String packData(int type, String serviceName, String candidateId){
+    private String packData(int type, String serviceName, String data){
         String entity;
         JsonObject json = new JsonObject();
         json.addProperty("type", type);
         json.addProperty("serviceName", serviceName);
-        json.addProperty("candidateId", candidateId);
+        json.addProperty("data", data);
         entity = json.toString();
         return entity;
     }
@@ -99,10 +103,11 @@ public class ProxyClient {
             }
 
             if(responseType == ResponseTypes.SERVICE_FOUND){
-                String executeRequest;
-                executeRequest = packData(BrokerActions.EXECUTE_SERVICE,
-                        "addVoteToCandidateById", "1");
-                clientOutput.println(executeRequest);
+                Gson gson = new Gson();
+                Request requestHolder = gson.fromJson(request, Request.class);
+                requestHolder.setType(BrokerActions.EXECUTE_SERVICE);
+                String newRequestEntity = gson.toJson(requestHolder);
+                clientOutput.println(newRequestEntity);
             }
 
             if (responseType == ResponseTypes.CONNECTED) {

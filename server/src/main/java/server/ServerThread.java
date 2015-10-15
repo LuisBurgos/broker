@@ -2,6 +2,10 @@ package server;
 
 import com.google.gson.Gson;
 import server.model.entities.Request;
+import server.model.entities.Response;
+import server.utils.BrokerActions;
+import server.utils.Protocol;
+import server.utils.ResponseTypes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,61 +18,68 @@ import java.net.Socket;
  */
 public class ServerThread implements Runnable {
 
-    private Socket socket = null;
-    private static int contadorDeThreads = 1;
+    private Socket mSocketServer;
+    private ProxyServer mProxyServer;
+    private static int totalThreads = 0;
 
-    private PrintWriter socketOut;
-    private BufferedReader socketIn;
-    private ProxyServer proxyServer;
+    private PrintWriter socketOutput;
+    private BufferedReader socketInput;
 
     public ServerThread(Socket socket, ProxyServer proxyServer) {
-        this.socket = socket;
-        System.out.println("thread #"+ contadorDeThreads + " on Server");
-        contadorDeThreads++;
-        this.proxyServer = proxyServer;
+        this.mSocketServer = socket;
+        this.mProxyServer = proxyServer;
+        System.out.println("thread #"+ (++totalThreads) + " on Server");
     }
 
-    private void connect(){
+    public void run() {
         try {
             initializeBuffers();
-            String inputLine, outputLine;
-            //Protocol kkp = new Protocol();
-            //outputLine = kkp.processInput(null);
-            //socketOut.println(outputLine);
-
-            while ((inputLine = socketIn.readLine()) != null) {
-                //outputLine = kkp.processInput(inputLine);
-                System.out.println(inputLine);
-                
-                Protocol protocol = new Protocol();
-                outputLine = protocol.processInput(inputLine);
-                
-                Request request = new Gson().fromJson(outputLine, Request.class);
-                
-                if(request.getType() == BrokerActions.EXECUTE_SERVICE){
-                    proxyServer.callService(request.getServiceName());
-                }
-                
-                //socketOut.println(inputLine);
-                //if (outputLine.equals("Bye"))
-                //  break;
-            }
-
-            socket.close();
-
+            connect();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void run() {
-        connect();
+    private void connect() throws IOException {
+        final int currentThread = totalThreads;
+
+        String inputLine, processedInputLine;
+        Protocol protocol = new Protocol();
+        processedInputLine = protocol.processInput(null);
+        System.out.println(processedInputLine);
+        socketOutput.println(processedInputLine);
+
+        while ((inputLine = socketInput.readLine()) != null) {
+
+            processedInputLine = protocol.processInput(inputLine);
+            System.out.println("Current thread #" + currentThread + " requests: " + processedInputLine);
+
+            Request request = new Gson().fromJson(processedInputLine, Request.class);
+
+            if(request.getType() == BrokerActions.EXECUTE_SERVICE){
+                Response response = new Response();
+                response.setType(ResponseTypes.REQUEST_RECEIVED);
+                response.setMessage("Request received");
+                String responseString = new Gson().toJson(response);
+                System.out.println(responseString);
+                socketOutput.println(responseString);
+                mProxyServer.callService(
+                        request.getServiceName(),
+                        Integer.parseInt(request.getData())
+                );
+                break;
+            }
+
+        }
+
+        mSocketServer.close();
+        System.out.println("Disconnect current thread #" + currentThread);
     }
 
     private void initializeBuffers() throws IOException {
-        socketOut = new PrintWriter(socket.getOutputStream(), true);
-        socketIn = new BufferedReader(
-                new InputStreamReader(socket.getInputStream())
+        socketOutput = new PrintWriter(mSocketServer.getOutputStream(), true);
+        socketInput = new BufferedReader(
+                new InputStreamReader(mSocketServer.getInputStream())
         );
     }
 

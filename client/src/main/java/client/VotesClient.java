@@ -1,6 +1,8 @@
 package client;
 
-import client.utils.BrokerActions;
+
+
+import entities.BrokerActions;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -1,6 +1,7 @@
 package com.broker.api;
 
 import com.broker.api.entities.BrokerInformation;
+import com.broker.api.exceptions.BrokerConnectionErrorException;
 import com.broker.api.exceptions.BrokerException;
 import com.broker.api.internal.BrokersLoader;
 
@@ -23,11 +24,11 @@ public class BrokerManager {
         return manager;
     }
 
-    public Connection getDefaultConnection() throws BrokerException{
+    public Connection getDefaultConnection() throws BrokerConnectionErrorException {
         return getConnection(DEFAULT_BROKER_NAME);
     }
 
-    public Connection getConnection(String brokerName) throws BrokerException {
+    public Connection getConnection(String brokerName) throws BrokerConnectionErrorException {
 
         BrokerInformation brokerToConnect = knownBrokers.get(brokerName);
 

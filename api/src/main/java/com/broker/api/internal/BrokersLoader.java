@@ -1,6 +1,6 @@
 package com.broker.api.internal;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.broker.api.entities.BrokerInformation;
 
 import java.io.BufferedReader;
@@ -16,7 +16,7 @@ import java.util.Iterator;
  */
 public class BrokersLoader {
 
-    private static String FILE_PATH = "brokersInformation.json";
+    private static String FILE_PATH = "src/main/java/com/broker/api/brokersInformation.json";
 
     public static HashMap<String, BrokerInformation> loadBrokersInformation() {
 
@@ -26,14 +26,21 @@ public class BrokersLoader {
 
         try {
             BufferedReader json  = new BufferedReader(new FileReader(FILE_PATH));
-            result = gson.fromJson(json, BrokerInformation[].class);
+
+            JsonObject brokersObject = new JsonParser().parse(json).getAsJsonObject();
+            JsonArray brokers = brokersObject.getAsJsonArray("brokers");
+
+            result = gson.fromJson(brokers, BrokerInformation[].class);
             knownBrokers = new HashMap<String, BrokerInformation>();
 
             for (BrokerInformation currentBroker : Arrays.asList(result)) {
+                System.out.println(currentBroker.toString());
                 knownBrokers.put(currentBroker.getName(), currentBroker);
             }
 
         } catch (FileNotFoundException e) {
+            System.err.println(e.getMessage());
+            System.out.println("Loading backup information...");
             knownBrokers = loadBackupInformation();
         }
 
@@ -45,6 +52,10 @@ public class BrokersLoader {
         backupBrokersInformation = new HashMap<String, BrokerInformation>();
         backupBrokersInformation.put("1", new BrokerInformation("1", "localhost", 5555));
         return backupBrokersInformation;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(BrokersLoader.loadBrokersInformation());
     }
 
 }

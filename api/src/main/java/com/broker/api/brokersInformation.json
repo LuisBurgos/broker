@@ -1,22 +1,24 @@
-[
-  {
-    "name": "1",
-    "ip": "localhost",
-    "port": 5555
-  },
-  {
-    "name": "2",
-    "ip": "localhost",
-    "port": 6666
-  },
-  {
-    "name": "3",
-    "ip": "localhost",
-    "port": 7777
-  },
-  {
-    "name": "4",
-    "ip": "localhost",
-    "port": 8888
-  }
-]
+{
+  "brokers": [
+    {
+      "name": "1",
+      "ip": "localhost",
+      "port": 5555
+    },
+    {
+      "name": "2",
+      "ip": "localhost",
+      "port": 6666
+    },
+    {
+      "name": "3",
+      "ip": "localhost",
+      "port": 7777
+    },
+    {
+      "name": "4",
+      "ip": "localhost",
+      "port": 8888
+    }
+  ]
+}

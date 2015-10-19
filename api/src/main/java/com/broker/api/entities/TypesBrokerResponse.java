@@ -9,4 +9,6 @@ public class TypesBrokerResponse {
     public static final int SERVICE_FOUND = 1;
     public static final int SERVICE_NOT_FOUND = 2;
     public static final int DISCONNECTED = 3;
+    public static final int SERVICE_NOT_AVAILABLE = 4;
+    public static final int SERVICE_NOT_EXISTS = 5;
 }

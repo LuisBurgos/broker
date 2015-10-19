@@ -5,7 +5,7 @@ package com.broker.api.exceptions;
  */
 public class ServiceNotFoundException extends ServiceException {
 
-    private final String errorMessage = "Couldn't get service requested";
+    private final String errorMessage = "Couldn't get service requested. Not found.";
 
     @Override
     public String getMessage() {

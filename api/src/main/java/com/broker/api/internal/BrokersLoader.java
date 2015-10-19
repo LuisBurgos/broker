@@ -16,7 +16,7 @@ import java.util.Iterator;
  */
 public class BrokersLoader {
 
-    private static String FILE_PATH = "src/main/java/com/broker/api/brokersInformation.json";
+    private static String FILE_PATH = "src/main/java/com/broker/api/internal/brokersInformation.json";
 
     public static HashMap<String, BrokerInformation> loadBrokersInformation() {
 
@@ -34,7 +34,6 @@ public class BrokersLoader {
             knownBrokers = new HashMap<String, BrokerInformation>();
 
             for (BrokerInformation currentBroker : Arrays.asList(result)) {
-                System.out.println(currentBroker.toString());
                 knownBrokers.put(currentBroker.getName(), currentBroker);
             }
 
@@ -52,10 +51,6 @@ public class BrokersLoader {
         backupBrokersInformation = new HashMap<String, BrokerInformation>();
         backupBrokersInformation.put("1", new BrokerInformation("1", "localhost", 5555));
         return backupBrokersInformation;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(BrokersLoader.loadBrokersInformation());
     }
 
 }

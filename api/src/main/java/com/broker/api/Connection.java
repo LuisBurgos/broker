@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.broker.api.entities.TypesBrokerRequest;
 import com.broker.api.entities.BrokerRequest;
 import com.broker.api.entities.TypesBrokerResponse;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,8 +27,8 @@ public class Connection {
     private BufferedReader socketInput;
 
     public Connection(String ip, int port) {
-        setIp(ip);
-        setPort(port);
+        this.ip = ip;
+        this.port = port;
     }
 
     public void open() throws BrokerConnectionErrorException, IOException {
@@ -40,29 +41,102 @@ public class Connection {
     }
 
     public void registerService(int serverPort, String serviceName) throws BrokerConnectionErrorException,
-                                                                           ServiceAlreadyDefinedException{
+                                                                           ServiceAlreadyDefinedException,
+                                                                           IOException {
+        String forwardrequest = packData(
+                TypesBrokerRequest.REGISTER_SERVICE,
+                serviceName,
+                String.valueOf(serverPort)
+        );
+        socketOutput.println(forwardrequest);
 
+        String responseFromBroker;
+        while ((responseFromBroker = socketInput.readLine()) != null) {
+            BrokerResponse response = unpackData(responseFromBroker);
+
+            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+                throw new ServiceAlreadyDefinedException();
+            }
+
+        }
     }
 
     public void changeServiceState(String serviceName, boolean status) throws BrokerConnectionErrorException,
-                                                                              ServiceNotFoundException {
+                                                                              ServiceNotFoundException,
+                                                                              IOException {
+        String forwardrequest = packData(
+                TypesBrokerRequest.CHANGE_SERVICE_STATUS,
+                serviceName,
+                String.valueOf(status)
+        );
+        socketOutput.println(forwardrequest);
 
+
+        String responseFromBroker;
+        while ((responseFromBroker = socketInput.readLine()) != null) {
+            BrokerResponse response = unpackData(responseFromBroker);
+
+            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+                throw new ServiceNotFoundException();
+            }
+
+        }
     }
 
-    public void findService(String serviceName) throws BrokerConnectionErrorException, ServiceNotFoundException {
+    public boolean findService(String serviceName) throws BrokerConnectionErrorException,
+                                                       IOException {
 
+        String forwardrequest = packData(
+                TypesBrokerRequest.FIND_SERVICE,
+                serviceName,
+                null
+        );
+        socketOutput.println(forwardrequest);
+
+        String responseFromBroker;
+        boolean serviceFound = false;
+        while ((responseFromBroker = socketInput.readLine()) != null) {
+            BrokerResponse response = unpackData(responseFromBroker);
+
+            if(response.getType() == TypesBrokerResponse.SERVICE_FOUND){
+                serviceFound = true;
+                break;
+            }
+
+        }
+        return serviceFound;
     }
 
     public void executeService(String serviceName, String jsonData) throws ServiceNotFoundException,
                                                                            InvalidDataFormatException,
                                                                            BrokerConnectionErrorException,
-                                                                           ServiceNotAvailableException {
-        //Code to execute.
+                                                                           ServiceNotAvailableException,
+                                                                           IOException {
+        String forwardrequest = packData(
+                TypesBrokerRequest.EXECUTE_SERVICE,
+                serviceName,
+                jsonData
+        );
+        socketOutput.println(forwardrequest);
 
+        String responseFromBroker;
+        while ((responseFromBroker = socketInput.readLine()) != null) {
+            BrokerResponse response = unpackData(responseFromBroker);
+
+            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_AVAILABLE){
+                throw new ServiceNotAvailableException();
+            }else if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+                throw new ServiceNotFoundException();
+            }
+
+        }
     }
 
     public void forwardRequest(String request) throws BrokerException, IOException {
-        //Todo: Change to correct exception.
+        /*open();
+
+        int requestType = request.getType();
+
         String responseFromBroker;
 
         while ((responseFromBroker = socketInput.readLine()) != null) {
@@ -92,22 +166,7 @@ public class Connection {
                 socketOutput.println(request);
             }
         }
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
+        close();*/
     }
 
     private BrokerResponse unpackData(String responseFromBroker){
@@ -116,8 +175,18 @@ public class Connection {
         return brokerResponse;
     }
 
+    private String packData(int type, String serviceName, String data){
+        String entity;
+        JsonObject json = new JsonObject();
+        json.addProperty("type", type);
+        json.addProperty("serviceName", serviceName);
+        json.addProperty("data", data);
+        entity = json.toString();
+        return entity;
+    }
+
     private void connectToBroker() throws IOException {
-        socket = new Socket(getIp(), getPort());
+        socket = new Socket(ip, port);
     }
 
     private void initializeBuffers() throws IOException {

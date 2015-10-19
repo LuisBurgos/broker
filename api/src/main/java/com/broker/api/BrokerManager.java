@@ -32,7 +32,7 @@ public class BrokerManager {
 
         BrokerInformation brokerToConnect = knownBrokers.get(brokerName);
 
-        Connection newConnection = null;
+        Connection newConnection;
         newConnection = new Connection(
                 brokerToConnect.getIp(),
                 brokerToConnect.getPort()

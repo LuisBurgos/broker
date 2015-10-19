@@ -3,7 +3,7 @@ package broker.entities;
 /**
  * Created by luisburgos on 8/10/15.
  */
-public class Response {
+public class BrokerResponse {
 
     private int type;
     private String message;

@@ -1,12 +1,10 @@
 package broker;
 
-import broker.entities.Request;
-import broker.entities.Response;
-import broker.entities.Service;
+import broker.entities.*;
 import broker.exceptions.ServerErrorException;
+import broker.exceptions.ServiceAlreadyDefinedException;
+import broker.exceptions.ServiceNotAvailableException;
 import broker.exceptions.ServiceNotFoundException;
-import broker.utils.BrokerActions;
-import broker.utils.ResponseTypes;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -58,38 +56,74 @@ public class BrokerThread implements Runnable {
             processedInputLine = protocol.processInput(inputLine);
             System.out.println("Current thread #" + currentThread + " requests: " + processedInputLine);
 
-            Request request = new Gson().fromJson(processedInputLine, Request.class);
+            BrokerRequest brokerRequest = new Gson().fromJson(processedInputLine, BrokerRequest.class);
 
-            if(request.getType() == BrokerActions.FIND_SERVICE){
+            if(brokerRequest.getType() == TypesBrokerRequest.FIND_SERVICE){
                 try {
-                    if(mBroker.findService(request.getServiceName()) != null){
-                        Response response = new Response();
-                        response.setType(ResponseTypes.SERVICE_FOUND);
-                        clientOut.println(new Gson().toJson(response));
+                    Service serviceRequested;
+                    serviceRequested = mBroker.findService(brokerRequest.getServiceName());
+                    if(serviceRequested != null){
+                        BrokerResponse brokerResponse = new BrokerResponse();
+                        brokerResponse.setType(TypesBrokerResponse.SERVICE_FOUND);
+                        clientOut.println(new Gson().toJson(brokerResponse));
                     }
                 } catch (ServiceNotFoundException e) {
-                    Response response = new Response();
-                    response.setType(ResponseTypes.SERVICE_NOT_FOUND);
-                    clientOut.println(new Gson().toJson(response));
+                    BrokerResponse brokerResponse = new BrokerResponse();
+                    brokerResponse.setType(TypesBrokerResponse.SERVICE_NOT_FOUND);
+                    clientOut.println(new Gson().toJson(brokerResponse));
                     break;
                 }
+
             }
 
-            if(request.getType() == BrokerActions.EXECUTE_SERVICE){
-                Service serviceToExecute = null;
+            if(brokerRequest.getType() == TypesBrokerRequest.EXECUTE_SERVICE){
+                Service serviceToExecute;
                 try {
-                    serviceToExecute = mBroker.findService(request.getServiceName());
+                    serviceToExecute = mBroker.findService(brokerRequest.getServiceName());
+                    if(!serviceToExecute.isActive()){
+                        throw new ServiceNotAvailableException();
+                    }
                 } catch (ServiceNotFoundException e) {
-                    e.printStackTrace();
+                    BrokerResponse brokerResponse = new BrokerResponse();
+                    brokerResponse.setType(TypesBrokerResponse.SERVICE_NOT_FOUND);
+                    clientOut.println(new Gson().toJson(brokerResponse));
+                    break;
+                } catch (ServiceNotAvailableException e) {
+                    BrokerResponse brokerResponse = new BrokerResponse();
+                    brokerResponse.setType(TypesBrokerResponse.SERVICE_NOT_AVAILABLE);
+                    clientOut.println(new Gson().toJson(brokerResponse));
+                    break;
                 }
-                String data = request.getData();
+                String data = brokerRequest.getData();
                 startServiceExecution(serviceToExecute, data);
                 break;
             }
 
-            if(request.getType() == BrokerActions.REGISTER_SERVICE){
-                Service service = new Gson().fromJson(request.getData(), Service.class);
-                mBroker.registerService(service);
+            if(brokerRequest.getType() == TypesBrokerRequest.REGISTER_SERVICE){
+                Service service = new Service(
+                        mSocketBroker.getLocalAddress().getHostName(),
+                        Integer.parseInt(brokerRequest.getData()),
+                        brokerRequest.getServiceName());
+                try {
+                    mBroker.registerService(service);
+                } catch (ServiceAlreadyDefinedException e) {
+                    BrokerResponse brokerResponse = new BrokerResponse();
+                    brokerResponse.setType(TypesBrokerResponse.SERVICE_ALREADY_DEFINED);
+                    clientOut.println(new Gson().toJson(brokerResponse));
+                }
+                break;
+            }
+
+            if(brokerRequest.getType() == TypesBrokerRequest.CHANGE_SERVICE_STATUS){
+                try {
+                    mBroker.changeServiceState(
+                            brokerRequest.getServiceName(),
+                            Boolean.parseBoolean(brokerRequest.getData()));
+                } catch (ServiceNotFoundException e) {
+                    BrokerResponse brokerResponse = new BrokerResponse();
+                    brokerResponse.setType(TypesBrokerResponse.SERVICE_NOT_FOUND);
+                    clientOut.println(new Gson().toJson(brokerResponse));
+                }
                 break;
             }
 
@@ -106,7 +140,7 @@ public class BrokerThread implements Runnable {
     private void startServiceExecution(Service serviceToExecute, String data){
 
         String hostname = serviceToExecute.getIp();
-        int    port     = serviceToExecute.getPort();
+        int port = serviceToExecute.getPort();
 
         try {
             connectToProxyServer(hostname, port);
@@ -123,29 +157,29 @@ public class BrokerThread implements Runnable {
     private void sendRequestExecution(String serviceName, String data) throws IOException, ServerErrorException {
 
         String responseFromProxyServer;
-        Request initialRequest;
+        BrokerRequest initialBrokerRequest;
 
         while ((responseFromProxyServer = servertIn.readLine()) != null) {
 
-            System.out.println("ProxyServer response: " + responseFromProxyServer);
+            System.out.println("ProxyServer brokerResponse: " + responseFromProxyServer);
 
-            Response response =  new Gson().fromJson(responseFromProxyServer, Response.class);
-            int responseType = response.getType();
+            BrokerResponse brokerResponse =  new Gson().fromJson(responseFromProxyServer, BrokerResponse.class);
+            int responseType = brokerResponse.getType();
 
-            if(responseType == ResponseTypes.CONNECTED){
-                initialRequest = new Request();
-                initialRequest.setType(BrokerActions.EXECUTE_SERVICE);
-                initialRequest.setServiceName(serviceName);
-                initialRequest.setData(data);
-                serverOut.println(new Gson().toJson(initialRequest));
+            if(responseType == TypesBrokerResponse.CONNECTED){
+                initialBrokerRequest = new BrokerRequest();
+                initialBrokerRequest.setType(TypesBrokerRequest.EXECUTE_SERVICE);
+                initialBrokerRequest.setServiceName(serviceName);
+                initialBrokerRequest.setData(data);
+                serverOut.println(new Gson().toJson(initialBrokerRequest));
             }
 
-            if(responseType == ResponseTypes.REQUEST_RECEIVED){
-                System.out.println(response.getMessage());
+            if(responseType == TypesBrokerResponse.REQUEST_RECEIVED){
+                System.out.println(brokerResponse.getMessage());
                 break;
             }
 
-            if(responseType == ResponseTypes.REQUEST_ERROR){
+            if(responseType == TypesBrokerResponse.REQUEST_ERROR){
                 throw new ServerErrorException();
             }
 

@@ -1,8 +1,7 @@
 package broker;
 
-import broker.entities.Request;
-import broker.entities.Response;
-import broker.utils.ResponseTypes;
+import broker.entities.BrokerResponse;
+import broker.entities.TypesBrokerResponse;
 import com.google.gson.Gson;
 
 public class Protocol {
@@ -16,9 +15,9 @@ public class Protocol {
         String theOutput = null;
 
         if(theInput == null){
-            Response response = new Response();
-            response.setType(ResponseTypes.CONNECTED);
-            theOutput = new Gson().toJson(response);
+            BrokerResponse brokerResponse = new BrokerResponse();
+            brokerResponse.setType(TypesBrokerResponse.CONNECTED);
+            theOutput = new Gson().toJson(brokerResponse);
         }
 
         if(theInput != null){

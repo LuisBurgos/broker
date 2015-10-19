@@ -1,6 +1,7 @@
 package broker;
 
 import broker.entities.Service;
+import broker.exceptions.ServiceAlreadyDefinedException;
 import broker.exceptions.ServiceNotFoundException;
 
 import java.io.IOException;
@@ -20,13 +21,22 @@ public class Broker {
         services = new HashMap<String, Service>();
     }
 
-    public void registerService(Service service){
+    public void registerService(Service service) throws ServiceAlreadyDefinedException {
         registerService(service.getService(), service);
     }
 
-    public void registerService(String name, Service service){
+    public void changeServiceState(String serviceName, boolean status) throws ServiceNotFoundException {
+        findService(serviceName).setActive(status);
+        //Service serviceToChange = findService(serviceName);
+        //serviceToChange.setActive(status);
+        //services.put(serviceName, serviceToChange);
+    }
+
+    public void registerService(String name, Service service) throws ServiceAlreadyDefinedException {
         if(!services.containsKey(name)){
             services.put(name, service);
+        }else{
+            throw new ServiceAlreadyDefinedException();
         }
     }
 

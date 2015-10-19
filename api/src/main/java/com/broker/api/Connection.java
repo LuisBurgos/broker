@@ -54,7 +54,7 @@ public class Connection {
         while ((responseFromBroker = socketInput.readLine()) != null) {
             BrokerResponse response = unpackData(responseFromBroker);
 
-            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+            if(response.getType() == TypesBrokerResponse.SERVICE_ALREADY_DEFINED){
                 throw new ServiceAlreadyDefinedException();
             }
 
@@ -76,7 +76,7 @@ public class Connection {
         while ((responseFromBroker = socketInput.readLine()) != null) {
             BrokerResponse response = unpackData(responseFromBroker);
 
-            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_FOUND){
                 throw new ServiceNotFoundException();
             }
 
@@ -122,10 +122,12 @@ public class Connection {
         String responseFromBroker;
         while ((responseFromBroker = socketInput.readLine()) != null) {
             BrokerResponse response = unpackData(responseFromBroker);
-
             if(response.getType() == TypesBrokerResponse.SERVICE_NOT_AVAILABLE){
                 throw new ServiceNotAvailableException();
-            }else if(response.getType() == TypesBrokerResponse.SERVICE_NOT_EXISTS){
+            }
+
+            //Added to new version
+            if(response.getType() == TypesBrokerResponse.SERVICE_NOT_FOUND){
                 throw new ServiceNotFoundException();
             }
 

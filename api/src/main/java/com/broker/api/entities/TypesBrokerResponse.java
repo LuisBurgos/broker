@@ -10,5 +10,7 @@ public class TypesBrokerResponse {
     public static final int SERVICE_NOT_FOUND = 2;
     public static final int DISCONNECTED = 3;
     public static final int SERVICE_NOT_AVAILABLE = 4;
-    public static final int SERVICE_NOT_EXISTS = 5;
+    public static final int SERVICE_ALREADY_DEFINED = 5;
+    public static final int REQUEST_RECEIVED = 6;
+    public static final int REQUEST_ERROR = 7;
 }

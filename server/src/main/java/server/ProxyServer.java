@@ -1,19 +1,16 @@
 package server;
 
+import com.broker.api.BrokerManager;
+import com.broker.api.Connection;
+import com.broker.api.exceptions.BrokerConnectionErrorException;
+import com.broker.api.exceptions.ServiceAlreadyDefinedException;
+import com.broker.api.exceptions.ServiceNotFoundException;
 import exceptions.ServerErrorException;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import server.model.entities.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
 
 import server.model.Votations;
 import server.model.entities.Response;
-import server.utils.BrokerActions;
 import server.utils.ServerResponses;
 
 /**
@@ -21,24 +18,7 @@ import server.utils.ServerResponses;
  */
 public class ProxyServer {
 
-    private static final int BROKER_PORT_NUMBER = 5555;
-    private static final String BASE_HOSTNAME = "localhost";
-    private String entity;
-
-    private Socket brokerSocket;
-    private PrintWriter brokerOutput;
-    private BufferedReader brokerInput;
-
-    public void build(){
-        try {
-            connectToBroker();
-            initializeBuffers();
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " + BASE_HOSTNAME);
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+    private Connection connection;
 
     public void callService(String serviceName, Object... params){
         try {
@@ -54,40 +34,37 @@ public class ProxyServer {
     public void sendResponse(int responseType){
         Response response = new Response();
         response.setType(responseType);
-        brokerOutput.println(new Gson().toJson(response));
-    }
-
-    public void packData(){
-
-    }
-
-    public void unpackData(){
-
+        //brokerOutput.println(new Gson().toJson(response));
     }
 
     public void registerServiceToBroker (){
-        Service service = new Service("localhost",
-                                      Server.PORT_NUMBER_SERVER,
-                                      "addVoteToCandidateById"
-        );
-        String entity;
-        JsonObject json = new JsonObject();
-        json.addProperty("type", BrokerActions.REGISTER_SERVICE);
-        json.addProperty("serviceName", "addVoteToCandidateById");
-        json.addProperty("data", new Gson().toJson(service));
-        entity = json.toString();
-        brokerOutput.println(entity);
+        try {
+            connection = BrokerManager.getManager().getDefaultConnection();
+            connection.open();
+            connection.registerService(Server.PORT_NUMBER_SERVER, "addVoteToCandidateById");
+            connection.close();
+        } catch (BrokerConnectionErrorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ServiceAlreadyDefinedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void connectToBroker() throws IOException {
-        brokerSocket = new Socket(BASE_HOSTNAME, BROKER_PORT_NUMBER);
-    }
-
-    private void initializeBuffers() throws IOException {
-        brokerOutput = new PrintWriter(brokerSocket.getOutputStream(), true);
-        brokerInput = new BufferedReader(
-                new InputStreamReader(brokerSocket.getInputStream())
-        );
+    public void changeServiceState(){
+        try {
+            connection = BrokerManager.getManager().getDefaultConnection();
+            connection.open();
+            connection.changeServiceState("addVoteToCandidateById", true);
+            connection.close();
+        } catch (BrokerConnectionErrorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ServiceNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 }

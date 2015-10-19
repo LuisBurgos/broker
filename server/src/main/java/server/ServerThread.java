@@ -1,11 +1,11 @@
 package server;
 
+import com.broker.api.entities.TypesBrokerRequest;
+import com.broker.api.entities.TypesBrokerResponse;
+import com.broker.api.internal.Protocol;
 import com.google.gson.Gson;
 import server.model.entities.Request;
 import server.model.entities.Response;
-import server.utils.BrokerActions;
-import server.utils.Protocol;
-import server.utils.ResponseTypes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,9 +56,9 @@ public class ServerThread implements Runnable {
 
             Request request = new Gson().fromJson(processedInputLine, Request.class);
 
-            if(request.getType() == BrokerActions.EXECUTE_SERVICE){
+            if(request.getType() == TypesBrokerRequest.EXECUTE_SERVICE){
                 Response response = new Response();
-                response.setType(ResponseTypes.REQUEST_RECEIVED);
+                response.setType(TypesBrokerResponse.REQUEST_RECEIVED);
                 response.setMessage("Request received");
                 String responseString = new Gson().toJson(response);
                 System.out.println(responseString);

@@ -14,11 +14,13 @@ public class Service {
     private String ip;
     private int port;
     private String service;
+    private boolean active;
 
-    public Service(String ip, int port, String services){
+    public Service(String ip, int port, String service){
         this.ip = ip;
         this.port = port;
-        this.service = services;
+        this.service = service;
+        this.active = true;
     }
 
     public String getIp() {
@@ -45,6 +47,11 @@ public class Service {
         this.service = service;
     }
 
+    public boolean isActive() {
+        return active;
+    }
 
-
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

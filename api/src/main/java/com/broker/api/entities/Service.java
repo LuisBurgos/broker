@@ -1,26 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package broker.entities;
+package com.broker.api.entities;
 
 /**
- *
- * @author JoseJulio
+ * Created by luisburgos on 15/10/15.
  */
 public class Service {
-    
+
     private String ip;
     private int port;
     private String service;
-    private boolean active;
-    
-    public Service(String ip, int port, String service){
+    private boolean status;
+
+    public Service(String ip, int port, String service, boolean status){
         this.ip = ip;
         this.port = port;
         this.service = service;
-        this.active = true;
+        this.status = status;
     }
 
     public String getIp() {
@@ -47,11 +41,12 @@ public class Service {
         this.service = service;
     }
 
-    public boolean isActive() {
-        return active;
+    public boolean isStatus() {
+        return status;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 }
+

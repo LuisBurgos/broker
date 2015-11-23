@@ -1,9 +1,9 @@
-package client.entities;
+package com.broker.api.entities;
 
 /**
  * Created by luisburgos on 8/10/15.
  */
-public class Response {
+public class BrokerResponse {
 
     private int type;
     private String message;

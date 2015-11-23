@@ -1,6 +1,5 @@
 package client;
 
-import client.utils.BrokerActions;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,7 +15,6 @@ public class VotesClient {
 
     private final String SERVICE_ADD_VOTE = "addVoteToCandidateById";
 
-
     private ProxyClient proxyClient;
     private JFrame      mainFrame;
     private JPanel      mainPanel;
@@ -28,7 +26,7 @@ public class VotesClient {
 
     public void addVoteToCandidateById(int id) {
         String candidateId = String.valueOf(id);
-        proxyClient.sendRequest(BrokerActions.FIND_SERVICE, SERVICE_ADD_VOTE, candidateId);
+        proxyClient.sendRequest(SERVICE_ADD_VOTE, candidateId);
     }
 
     private void prepareGUI(){

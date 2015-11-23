@@ -1,4 +1,4 @@
-package broker.exceptions;
+package com.broker.api.exceptions;
 
 /**
  * Created by luisburgos on 27/09/15.

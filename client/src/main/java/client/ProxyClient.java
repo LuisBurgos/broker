@@ -1,14 +1,16 @@
 package client;
 
-import client.entities.Request;
-import client.entities.Response;
-import client.exceptions.ServiceNotFoundException;
-import client.utils.BrokerActions;
-import client.utils.ResponseTypes;
+import com.broker.api.BrokerManager;
+import com.broker.api.Connection;
+import com.broker.api.exceptions.BrokerConnectionErrorException;
+import com.broker.api.exceptions.InvalidDataFormatException;
+import com.broker.api.exceptions.ServiceNotAvailableException;
+import com.broker.api.exceptions.ServiceNotFoundException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import javax.swing.*;
+import javax.xml.ws.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,60 +22,48 @@ import java.net.Socket;
  */
 public class ProxyClient {
 
-    private static final int BROKER_PORT_NUMBER = 5555;
-    private static final String BASE_HOSTNAME = "localhost";
+    private Connection connection;
 
-    private Socket clientSocket;
-    private PrintWriter clientOutput;
-    private BufferedReader clientInput;
-
-    public void build(){
+    public void sendRequest(String serviceName, String data){
         try {
-            connectToBroker();
-            initializeBuffers();
+            connection = BrokerManager.getManager().getDefaultConnection();
+            connection.open();
+            if(connection.findService(serviceName)){
+                connection.executeService(serviceName, data);
+            }else {
+                throw new ServiceNotFoundException();
+            }
+            connection.close();
         } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " + BASE_HOSTNAME);
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
-    public void sendRequest(int type, String serviceName, String data){
-        build();
-        String request;
-        request = packData(type, serviceName, data);
-        sendRequest(request);
-    }
-
-    public void sendRequest(String forwardRequest){
-        try {
-            startRequestProcessing(forwardRequest);
-        } catch (IOException e) {
+            final JPanel panel = new JPanel();
+            JOptionPane.showMessageDialog(panel,
+                    e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (BrokerConnectionErrorException e) {
+            System.err.println(e.getMessage());
+        } catch (InvalidDataFormatException e) {
             System.err.println(e.getMessage());
         } catch (ServiceNotFoundException e) {
             final JPanel panel = new JPanel();
-            JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(panel,
+                    e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (ServiceNotAvailableException e) {
+            System.err.println(e.getMessage());
         }
     }
 
-    private void connectToBroker() throws IOException {
-        clientSocket = new Socket(BASE_HOSTNAME, BROKER_PORT_NUMBER);
-    }
-
-    private void initializeBuffers() throws IOException {
-        clientOutput = new PrintWriter(clientSocket.getOutputStream(), true);
-        clientInput = new BufferedReader(
-                new InputStreamReader(clientSocket.getInputStream())
-        );
-    }
-
     private String packData(int type, String serviceName, String data){
+
         String entity;
         JsonObject json = new JsonObject();
         json.addProperty("type", type);
         json.addProperty("serviceName", serviceName);
         json.addProperty("data", data);
         entity = json.toString();
+
         return entity;
     }
 
@@ -81,40 +71,6 @@ public class ProxyClient {
         Response response;
         response = new Gson().fromJson(responseFromBroker, Response.class);
         return response;
-    }
-
-    private void startRequestProcessing(String request) throws IOException, ServiceNotFoundException {
-
-        String responseFromBroker;
-
-        while ((responseFromBroker = clientInput.readLine()) != null) {
-
-            System.out.println("Broker response: " + responseFromBroker);
-
-            Response response = unpackData(responseFromBroker);
-            int responseType = response.getType();
-
-            if (responseType == ResponseTypes.DISCONNECTED){
-                break;
-            }
-
-            if(responseType == ResponseTypes.SERVICE_NOT_FOUND){
-                throw new ServiceNotFoundException();
-            }
-
-            if(responseType == ResponseTypes.SERVICE_FOUND){
-                Gson gson = new Gson();
-                Request requestHolder = gson.fromJson(request, Request.class);
-                requestHolder.setType(BrokerActions.EXECUTE_SERVICE);
-                String newRequestEntity = gson.toJson(requestHolder);
-                clientOutput.println(newRequestEntity);
-            }
-
-            if (responseType == ResponseTypes.CONNECTED) {
-                clientOutput.println(request);
-            }
-        }
-        clientSocket.close();
     }
 
 }

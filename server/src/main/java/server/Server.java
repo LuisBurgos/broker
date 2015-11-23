@@ -21,10 +21,6 @@ public class Server {
     private ProxyServer proxyServer = new ProxyServer();
     private ServerSocket socketServer;
 
-    public void start(){
-
-    }
-
     public void initializeSocket() throws IOException {
         socketServer = new ServerSocket(PORT_NUMBER_SERVER);
     }
@@ -42,16 +38,12 @@ public class Server {
         }
     }
 
-    public void runService(){
-
+    public void registerServiceIntoBroker(){
+        proxyServer.registerServiceToBroker();
     }
 
-    /**
-     * Use BROKER API
-     */
-    public void registerServiceIntoBroker(){
-        proxyServer.build();
-        proxyServer.registerServiceToBroker();
+    public void changeServiceState(){
+        proxyServer.changeServiceState();
     }
 
     public static void main(String[] args) {
@@ -77,6 +69,7 @@ public class Server {
         try {
             server.initializeSocket();
             server.registerServiceIntoBroker();
+            server.changeServiceState();
             server.startAcceptingPetitions();
         } catch (IOException e) {
             e.printStackTrace();

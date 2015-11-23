@@ -1,9 +1,9 @@
-package client.entities;
+package broker.entities;
 
 /**
  * Created by luisburgos on 2/10/15.
  */
-public class Request {
+public class BrokerRequest {
 
     private int type;
     private String serviceName;
